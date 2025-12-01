@@ -1,26 +1,14 @@
-<<<<<<< HEAD
-import java.io.Serializable;
-
-// must make it serializable
-
-public class Character extends Inventor implements Serializable{
-    private String name;
-    private Room currentRoom;
-=======
 public class Character extends Inventor{
     private String name;
     private Room currentRoom;
     private double px = 2.5, py = 2.5;
     private double angle = 0.0;
->>>>>>> 72134ce (back from the dead)
 
     public Character(String name, Room startingRoom) {
         this.name = name;
         this.currentRoom = startingRoom;
     }
 
-<<<<<<< HEAD
-=======
     public double getPx() {
         return px;
     }
@@ -45,7 +33,6 @@ public class Character extends Inventor{
         this.angle = angle;
     }
 
->>>>>>> 72134ce (back from the dead)
     public String getName() {
         return name;
     }

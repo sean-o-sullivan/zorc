@@ -1,79 +1,182 @@
-<<<<<<< HEAD
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 
-    public final class GameView{
+public class RaycastCave{
+    
+    // This represents the "Room" data structure you requested.
+    // In your full Zork game, every Room object would hold one of these arrays.
+    // '1'-'9' are items, '#' are walls, '.' is empty space.
+
+
+    // public static String[] CURRENT_ROOM_MAP = new String[]{
+    //     "########################################",
+    //     "##S.................##................##",
+    //     "##...#####...........#.......1........##",
+    //     "##..##...##...................####....##",
+    //     "##.##.....##.................##..##...##",
+    //     "##.#...2.....................#....#...##",
+    //     "##.#........................##....#...##",
+    //     "##.##.....##.......###......##...##...##",
+    //     "##..##...##.......##.##......#####....##",
+    //     "##...#####.......##...##..............##",
+    //     "##..............##.....##.............##",
+    //     "##..............#...3...#.............##",
+    //     "##.....####.....##.....##.............##",
+    //     "##....##..##.....##...................##",
+    //     "##....#....#......#####.......####....##",
+    //     "##....#....#.................##..##...##",
+    //     "##....##..##.................#....#...##",
+    //     "##.....####..................#....#...##",
+    //     "##...........................##..##...##",
+    //     "##............................####....##",
+    //     "########################################"
+    // };
+
+// PILLAR_HALL_MAP
+//     public static String[] CURRENT_ROOM_MAP = new String[]{
+//     "########################################",
+//     "##....................................##",
+//     "##..S..............................1..##",
+//     "##......##......##....##......##......##",
+//     "##......##......##....##......##......##",
+//     "##....................................##",
+//     "##....................................##",
+//     "##..##......##............##......##..##",
+//     "##..##......##.....2......##......##..##",
+//     "##..........##............##..........##",
+//     "##....................................##",
+//     "##....................................##",
+//     "##..........##............##..........##",
+//     "##..##......##............##......##..##",
+//     "##..##......##............##......##..##",
+//     "##....................................##",
+//     "##....................................##",
+//     "##......##......##....##......##......##",
+//     "##......##......##....##...3..##......##",
+//     "##....................................##",
+//     "########################################"
+// };
+
+
+// TWIN_FORTRESS_MAP
+// public static String[] CURRENT_ROOM_MAP = new String[]{
+//     "########################################",
+//     "##S..##...................##..........##",
+//     "##...##...................##....1.....##",
+//     "##...##...................##..........##",
+//     "##...##.......#####.......##..........##",
+//     "##............#...#.......##...####...##",
+//     "##............#...#............#..#...##",
+//     "###############...##############..#...##",
+//     "##................................#...##",
+//     "##................................#...##",
+//     "###############...##############..#...##",
+//     "##............#...#............#..#...##",
+//     "##............#...#.......##...####...##",
+//     "##...##.......#####.......##..........##",
+//     "##...##...................##....2.....##",
+//     "##...##...................##..........##",
+//     "##...##...................##..........##",
+//     "##...##...................##..........##",
+//     "##...##...3...............##..........##",
+//     "##........................##..........##",
+//     "########################################"
+// };
+
+
+// SPIRAL_MAP
+public static String[] CURRENT_ROOM_MAP = new String[]{
+    "########################################",
+    "##....................................##",
+    "##.S..###############################.##",
+    "##....................................##",
+    "##.#####################################",
+    "##....................................##",
+    "#####################################.##",
+    "##....................................##",
+    "##.#####################################",
+    "##...................1................##",
+    "#####################################.##",
+    "##....................................##",
+    "##.#####################################",
+    "##....................................##",
+    "#####################################.##",
+    "##....................................##",
+    "##.#####################################",
+    "##...................................2##",
+    "########################################",
+    "########################################",
+    "########################################"
+};
+
+    public static boolean RIGHT_TO_LEFT = false;
+     
+    public static RaycastCave addComponentsToPane(Container pane) {
+         
+        if (!(pane.getLayout() instanceof BorderLayout)) {
+            pane.add(new JLabel("Container doesn't use BorderLayout!"));
+        }
+         
+        if (RIGHT_TO_LEFT) {
+            pane.setComponentOrientation(
+                    java.awt.ComponentOrientation.RIGHT_TO_LEFT);
+        }
+         
+        JButton button = new JButton("");
+     
+        // The Game Panel, big and in the centre
+        RaycastCave gamePanel = new RaycastCave();
+        pane.add(gamePanel, BorderLayout.CENTER);
+         
+        // Simple Controls UI
+        JPanel bottomPanel = new JPanel();
+        bottomPanel.add(new JLabel("ARROWS to Move | SPACE to Scan | Q to Wipe |'E' to Pick Up | 'R' to Drop"));
+        pane.add(bottomPanel, BorderLayout.PAGE_START);
+        
+        GameDialogPanel dialogPanel = new GameDialogPanel();
+        pane.add(dialogPanel, BorderLayout.LINE_START);
+         
+        button = new JButton("Long-Named Button 4 (PAGE_END)");
+        pane.add(button, BorderLayout.PAGE_END);
+         
+        button = new JButton("5 (LINE_END)");
+        pane.add(button, BorderLayout.LINE_END);
+
+        System.out.println(Arrays.toString(pane.getComponents()));
+
+        return gamePanel;
+
+                        // label1.setText("mouse pressed at point:"
+                                // + e.getX() + " " + e.getY());
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            JFrame frame = new JFrame("Lidar Zork Interface");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            
+            RaycastCave gamePanel = addComponentsToPane(frame.getContentPane());
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+            
+            
+            gamePanel.requestFocusInWindow();
+        });
+    }
+
 
 
     // ===================================
-    // Game rendering logic
+    // Game logic
     // ===================================
-    public static class DisplayGame extends JPanel {
+    public static class RaycastCave extends JPanel {
 
-        
-        // We initialise the gameview with the room map, as the map is required for this to be able to display anything
-
-        private String[] CURRENT_ROOM_MAP;
-
-        public DisplayGame(String[] startMap) {
-            this.CURRENT_ROOM_MAP = startMap;
-        }
-
-        public void updateMap(String[] newMap) {
-            this.CURRENT_ROOM_MAP = newMap;
-
-            this.repaint(); 
-        }
-
-
-        public static boolean RIGHT_TO_LEFT = false;
-        
-        public static DisplayGame addComponentsToPane(Container pane) {
-            
-            if (!(pane.getLayout() instanceof BorderLayout)) {
-                pane.add(new JLabel("Container doesn't use BorderLayout!"));
-            }
-            
-            if (RIGHT_TO_LEFT) {
-                pane.setComponentOrientation(
-                        java.awt.ComponentOrientation.RIGHT_TO_LEFT);
-            }
-            
-            JButton button = new JButton("");
-        
-            // The Game Panel, big and in the centre
-            DisplayGame gamePanel = new DisplayGame();
-            pane.add(gamePanel, BorderLayout.CENTER);
-            
-            // Simple Controls UI
-            JPanel bottomPanel = new JPanel();
-            bottomPanel.add(new JLabel("ARROWS to Move | SPACE to Scan | Q to Wipe |'E' to Pick Up | 'R' to Drop"));
-            pane.add(bottomPanel, BorderLayout.PAGE_START);
-            
-            GameDialogPanel dialogPanel = new GameDialogPanel();
-            pane.add(button, BorderLayout.LINE_START);
-            
-            button = new JButton("Long-Named Button 4 (PAGE_END)");
-            pane.add(button, BorderLayout.PAGE_END);
-            
-            button = new JButton("5 (LINE_END)");
-            pane.add(button, BorderLayout.LINE_END);
-
-            System.out.println(Arrays.toString(pane.getComponents()));
-
-            return gamePanel;
-
-                            // label1.setText("mouse pressed at point:"
-                                    // + e.getX() + " " + e.getY());
-        }
-
-
-
-        
         private static final int SCREEN_W = 1000;
         private static final int SCREEN_H = 600;
         private static final double VIEW_ANGLE = Math.toRadians(90); 
@@ -82,67 +185,6 @@ import java.util.LinkedList;
         private double playerAngle = 0.0;
         
         private boolean kUp, kDown, kLeft, kRight, kScan, kWipe;
-=======
-import java.util.List;
-import java.util.*;
-import javax.swing.*;
-import java.awt.*;
-
-public class GameView {
-
-    // Data Transfer Object to pass components to Controller
-    public static class UIContext {
-        public JFrame frame;
-        public DisplayGame gamePanel;
-        public JButton btnPickUp;
-        public JButton btnDrop;
-        public GameDialogPanel dialogPanel; 
-    }
-
-    public static UIContext createGameUI(GameModel model) {
-        UIContext ctx = new UIContext();
-
-        ctx.frame = new JFrame("MVC Zork Lidar");
-        ctx.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        ctx.frame.setLayout(new BorderLayout());
-
-        // CENTER: The Game Map
-        ctx.gamePanel = new DisplayGame(model);
-        ctx.frame.add(ctx.gamePanel, BorderLayout.CENTER);
-
-        // WEST: The New Dialog Panel (Left Box)
-        ctx.dialogPanel = new GameDialogPanel();
-        ctx.dialogPanel.setPreferredSize(new Dimension(250, 0)); // Set Width to 250px
-        ctx.frame.add(ctx.dialogPanel, BorderLayout.WEST);
-
-        // SOUTH: Buttons only (Input is now in the West panel)
-        JPanel bottomPanel = new JPanel();
-        ctx.btnPickUp = new JButton("Pick Up (E)");
-        ctx.btnDrop = new JButton("Drop (R)");
-        
-        bottomPanel.add(ctx.btnPickUp);
-        bottomPanel.add(ctx.btnDrop);
-
-        ctx.frame.add(bottomPanel, BorderLayout.SOUTH);
-        
-        ctx.frame.pack();
-        ctx.frame.setLocationRelativeTo(null); 
-
-        return ctx;
-    }
-
-
-    
-    // 3. The Renderer Class
-    public static class DisplayGame extends JPanel {
-        
-
-        // ===========================================
-
-        private static final int SCREEN_W = 1000;
-        private static final int SCREEN_H = 600;
-        private static final double VIEW_ANGLE = Math.toRadians(90); 
->>>>>>> 72134ce (back from the dead)
 
         private static class Dot {
             double x, y;
@@ -155,7 +197,22 @@ public class GameView {
         private List<Dot> dots = new LinkedList<>(); // used the list interface referenc so I can swap for other implementations if needs be
         private static final int MAX_DOTS = 5000; // too many and the game gets too slow
 
-<<<<<<< HEAD
+
+        public RaycastCave() {
+            setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
+            setBackground(Color.BLACK);
+            setFocusable(true);
+            
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    requestFocusInWindow();
+                }
+            });
+
+            setupInput();
+            new Timer(16, e -> updateAndDraw()).start();
+        }
 
         private static int gameState=0;
         private static long start=0;
@@ -176,8 +233,8 @@ public class GameView {
             if (kRight) playerAngle += 0.07;
 
             // Movement
-            double dx = Math.cos(model.playerAngle) * 0.1;
-            double dy = Math.sin(model.playerAngle) * 0.1;
+            double dx = Math.cos(playerAngle) * 0.1;
+            double dy = Math.sin(playerAngle) * 0.1;
             
             // Collision Check (Very simple: look ahead)
             if (kUp) {
@@ -205,119 +262,17 @@ public class GameView {
 
         
         private void WipeMap(){
-=======
-        // ===========================================
-
-
-        private GameModel model;
-
-        public DisplayGame(GameModel model) {
-            this.model = model;
-            setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
-            setBackground(Color.BLACK);
-            setFocusable(true); // Crucial for KeyListeners
-        }
-
-
-        // ===============================
-
-        
-        // Rendering
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            
-            if (model.getCurrentMap() == null) return;
-            if (model.player == null) return;
-            
-            Graphics2D g2 = (Graphics2D) g;
-
-            // Draw Background
-            g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0,  getWidth(),getHeight());
-            g2.setColor(Color.white);
-            // String timer = ""+duration;
-
-            // g2.drawString(timer, SCREEN_W/2, 40);
-            g2.setColor(Color.BLACK);
-
-            // Draw all Dots, including those that are technically occluded but what the heck
-            for (Dot d : dots) {
-                // Transform world coordinates to screen coordinates
-                // 1. Relative to player
-                double rx = d.x - model.player.getPx();
-                double ry = d.y - model.player.getPy();
-                
-                // cos-theta = costheta
-                // -sin-theta = sintheta
-
-                // 2. Rotate to face player's view (Standard rotation matrix)
-                double rotX = (rx * Math.cos(model.player.getAngle())) + (ry * Math.sin(model.player.getAngle()));
-
-                System.out.printf("%2f %2f %2f",rotX, rx * Math.cos(model.player.getAngle()), ry * Math.sin(model.player.getAngle()));
-                System.out.println();
-                
-                double rotY = (rx * Math.sin(-model.player.getAngle())) + (ry * Math.cos(model.player.getAngle()));
-
-                // 3. If behind us, don't draw
-                if (rotX <= 0.1) continue;
-
-                // 4. Project to screen (Perspective math: Y / X)
-                double scale = 500.0; // Zoom factor
-                int screenX = (int)(getWidth()/2 + (rotY / rotX) * scale);
-                int screenY = getHeight()/2;
-                
-                // 5. Calculate Height (Closer = Bigger)
-                int height = (int)(SCREEN_H / rotX); // why the fuck is rotx this magical constant that can scale the height of the walls?. 
-                int width  = Math.max(2, height / 8); // Thin rectangles
-
-                // 6. Shading (Darker if further away)
-                float brightness = (float)(1.0 / (rotX * 0.3 + 1)); 
-                brightness = Math.min(1f, Math.max(0f, brightness));
-                
-                Color c = d.color;
-                Color shaded = new Color(
-                    (int)(c.getRed() * brightness),
-                    (int)(c.getGreen() * brightness),
-                    (int)(c.getBlue() * brightness)
-                );
-                
-                g2.setColor(shaded);
-                g2.fillRect(screenX - width/2, screenY - height/2, width, height);
-            }
-            
-            // Simple HUD
-            g2.setColor(Color.GREEN);
-            g2.drawString("MAP ITEMS: " + model.countItems(), 20, 20);
-        }
-
-
-
-        // ===============================
-
-
-        // Wipes the map
-        public void wipeMap(){
->>>>>>> 72134ce (back from the dead)
             for (int idx=0 ; idx<dots.size(); idx++){
                 dots.remove(idx);
             }
         }
 
-<<<<<<< HEAD
 
         // Raycaster
         private void fireLidar() {
 
             double startAngle = playerAngle - (VIEW_ANGLE)/2; 
             double endAngle   = playerAngle + (VIEW_ANGLE)/2;
-=======
-        // Raycaster
-        public void fireLidar() {
-
-            double startAngle = model.player.getAngle() - (VIEW_ANGLE)/2; 
-            double endAngle   = model.player.getAngle() + (VIEW_ANGLE)/2;
->>>>>>> 72134ce (back from the dead)
 
             double stepAngle  = 0.1;
 
@@ -326,7 +281,6 @@ public class GameView {
             }
         }
 
-<<<<<<< HEAD
         private void castSingleRay(double angle) {
             double rayX = px;
             double rayY = py;
@@ -334,29 +288,13 @@ public class GameView {
             // Math: Direction of the ray
             double stepX = Math.cos(angle);
             double stepY = Math.sin(angle);
-=======
-
-
-        private void castSingleRay(double angle) {
-            double rayX = model.player.getPx();
-            double rayY = model.player.getPy();
-            
-            // Math: Direction of the ray
-            double Rx = Math.cos(angle);
-            double Ry = Math.sin(angle);
->>>>>>> 72134ce (back from the dead)
             
             double distance = 0;
             
             // This is easier to understand than DDA algorithms.
             while (distance < 50.0) { // Max range 25 meters
-<<<<<<< HEAD
                 rayX += stepX * 0.05;
                 rayY += stepY * 0.05;
-=======
-                rayX += Rx * 0.05;
-                rayY += Ry * 0.05;
->>>>>>> 72134ce (back from the dead)
                 distance += 0.05;
 
                 boolChar tile = getTile(rayX, rayY);
@@ -388,19 +326,11 @@ public class GameView {
         }
 
 
-<<<<<<< HEAD
-=======
-        // If we hit somenthing that can be registered as a dot, me create a dot
->>>>>>> 72134ce (back from the dead)
         private void addDot(double x, double y, double dist, Color c) {
             dots.add(new Dot(x, y, dist, c));
             if (dots.size() > MAX_DOTS) dots.remove(0); // Oldest dot deleted
         }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 72134ce (back from the dead)
         private boolChar getTile(double x, double y) {
 
             boolChar answer = new boolChar('#', true);
@@ -409,19 +339,11 @@ public class GameView {
             int my = (int)y;
 
             // Bounds check
-<<<<<<< HEAD
             if (my < 0 || my >= CURRENT_ROOM_MAP.length || mx < 0 || mx >= CURRENT_ROOM_MAP[0].length()) {
                 return answer;
             }
 
             char cha = CURRENT_ROOM_MAP[my].charAt(mx);
-=======
-            if (my < 0 || my >= model.getCurrentMap().length || mx < 0 || mx >= model.getCurrentMap()[0].length()) {
-                return answer;
-            }
-
-            char cha = model.getCurrentMap()[my].charAt(mx);
->>>>>>> 72134ce (back from the dead)
 
             switch (cha) {
                 case '1': case '2': case '3': case '4': case '5':
@@ -444,10 +366,6 @@ public class GameView {
 
         }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 72134ce (back from the dead)
         private class boolChar{
             char c;
             boolean b;
@@ -470,7 +388,6 @@ public class GameView {
         }
 
 
-<<<<<<< HEAD
         // Simulates picking up an item (turning '1' into '.')
         private void interactWithItem(boolean pickup) {
             // Check 1 meter in front of player
@@ -497,8 +414,6 @@ public class GameView {
                 modifyMap(checkX, checkY, target.getC());
             }
         }
-
-        
         
 
         private void modifyMap(int x, int y, char newChar) {
@@ -614,17 +529,4 @@ public class GameView {
         }
     }
 
-=======
-        private void modifyMap(int x, int y, char newChar) {
-            char[] row = model.getCurrentMap()[y].toCharArray();
-            row[x] = newChar;
-            model.getCurrentMap()[y] = new String(row);
-        }
-
-
-        
-
-
-    }
->>>>>>> 72134ce (back from the dead)
 }

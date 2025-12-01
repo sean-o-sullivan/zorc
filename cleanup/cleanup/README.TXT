@@ -14,18 +14,11 @@ this game is a vehicle for you to display your knowledge of java
 
    what is a masterpiece
 
-<<<<<<< HEAD
-
-         attack things?
-
-
-=======
          attack things?
 
 
 WE MUST IMPLEMENT A GENERIC CLASS AND METHOD 
 
->>>>>>> 72134ce (back from the dead)
 
 we need to finish this game. and fast. 
 

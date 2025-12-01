@@ -32,32 +32,6 @@ public class Parser {
         }
     }
 
-<<<<<<< HEAD
-=======
-    // overloaded command, to work with the gui text dialogue interface
-    public Command getCommand(String inputline) {
-
-        String word1 = null;
-        String word2 = null;
-
-        Scanner tokenizer = new Scanner(inputline);
-        if (tokenizer.hasNext()) {
-            word1 = tokenizer.next();
-            if (tokenizer.hasNext()) {
-                word2 = tokenizer.next();
-            }
-        }
-        tokenizer.close();
-
-        if (commands.isCommand(word1)) {
-            return new Command(word1, word2);
-        } else {
-            return new Command(null, word2);
-        }
-    }
-
-
->>>>>>> 72134ce (back from the dead)
     public void showCommands() {
         commands.showAll();
     }

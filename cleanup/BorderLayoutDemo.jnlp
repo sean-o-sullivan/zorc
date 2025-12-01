@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- JNLP File for BorderLayoutDemo -->
+<jnlp
+  spec="1.0+"
+  codebase="https://docs.oracle.com/javase/tutorialJWS/samples/uiswing/BorderLayoutDemoProject"
+  href="BorderLayoutDemo.jnlp">
+  <information>
+    <title>BorderLayoutDemo</title>
+    <vendor>The Java(tm) Tutorial</vendor>
+    <homepage href="https://docs.oracle.com/javase/tutorial/uiswing/examples/layout/index.html#BorderLayoutDemo"/>
+    <description>BorderLayoutDemo</description>
+    <description kind="short">PENDING</description>
+    <offline-allowed/>
+  </information>
+  <resources>
+    <j2se version="1.7+"/>
+    <jar href="BorderLayoutDemo.jar"/>
+  </resources>
+  <application-desc main-class="layout.BorderLayoutDemo"/>
+</jnlp> 
