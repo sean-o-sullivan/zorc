@@ -14,9 +14,10 @@ this game is a vehicle for you to display your knowledge of java
 
    what is a masterpiece
 
-
          attack things?
 
+
+WE MUST IMPLEMENT A GENERIC CLASS AND METHOD 
 
 
 we need to finish this game. and fast. 

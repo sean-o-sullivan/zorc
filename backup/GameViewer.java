@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 
-public class RaycastCave{
+public class GameViewer {
     
     // This represents the "Room" data structure you requested.
     // In your full Zork game, every Room object would hold one of these arrays.
@@ -139,7 +139,7 @@ public static String[] CURRENT_ROOM_MAP = new String[]{
         pane.add(bottomPanel, BorderLayout.PAGE_START);
         
         GameDialogPanel dialogPanel = new GameDialogPanel();
-        pane.add(dialogPanel, BorderLayout.LINE_START);
+        pane.add(button, BorderLayout.LINE_START);
          
         button = new JButton("Long-Named Button 4 (PAGE_END)");
         pane.add(button, BorderLayout.PAGE_END);
@@ -528,5 +528,4 @@ public static String[] CURRENT_ROOM_MAP = new String[]{
             });
         }
     }
-
 }

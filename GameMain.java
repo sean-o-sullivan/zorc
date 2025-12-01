@@ -3,6 +3,7 @@ import java.awt.*;
 
 public interface GameMain {
 
+
     public static void main(String[] args) {
         JFrame frame = new JFrame("MVC Game Demo");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -14,6 +15,15 @@ public interface GameMain {
         // 1. Instantiate the View
         GameDialogPanel dialogPanel = new GameDialogPanel();
 
+        GameView.DisplayGame gamePanel = new GameView.DisplayGame(level1);
+        
+        frame.add(gamePanel);
+        frame.add(dialogPanel);
+        frame.setSize(400, 400);
+        frame.setVisible(true);
+
+        // we need to the frame here. 
+// 
         // 2. Instantiate Controller (Passes logic to the view)
         new GameController(dialogPanel);
 

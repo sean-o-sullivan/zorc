@@ -121,6 +121,8 @@ public class GameModel {
         createItems();
         createCharacters();
         player = getPlayer();
+
+
         printWelcome();
 
         boolean finished = false;
@@ -130,13 +132,15 @@ public class GameModel {
         }
         System.out.println("Thank you for playing. Goodbye.");
 
+        // broken save functionality
         ArrayList<Object> objecs = new ArrayList<Object>();
         objecs.add(characters);
         objecs.add(rooms);
         objecs.add(items);
-        IOControl.save(objecs);
+        // IOControl.save(objecs);
     }
 
+    
     private void printWelcome() {
         System.out.println();
         System.out.println("Welcome to the University adventure!");

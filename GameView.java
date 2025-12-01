@@ -1,182 +1,78 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 
-public class gameviewbackup {
-    
-    // This represents the "Room" data structure you requested.
-    // In your full Zork game, every Room object would hold one of these arrays.
-    // '1'-'9' are items, '#' are walls, '.' is empty space.
+    public final class GameView{
 
 
-    // public static String[] CURRENT_ROOM_MAP = new String[]{
-    //     "########################################",
-    //     "##S.................##................##",
-    //     "##...#####...........#.......1........##",
-    //     "##..##...##...................####....##",
-    //     "##.##.....##.................##..##...##",
-    //     "##.#...2.....................#....#...##",
-    //     "##.#........................##....#...##",
-    //     "##.##.....##.......###......##...##...##",
-    //     "##..##...##.......##.##......#####....##",
-    //     "##...#####.......##...##..............##",
-    //     "##..............##.....##.............##",
-    //     "##..............#...3...#.............##",
-    //     "##.....####.....##.....##.............##",
-    //     "##....##..##.....##...................##",
-    //     "##....#....#......#####.......####....##",
-    //     "##....#....#.................##..##...##",
-    //     "##....##..##.................#....#...##",
-    //     "##.....####..................#....#...##",
-    //     "##...........................##..##...##",
-    //     "##............................####....##",
-    //     "########################################"
-    // };
+    // ===================================
+    // Game rendering logic
+    // ===================================
+    public static class DisplayGame extends JPanel {
 
-// PILLAR_HALL_MAP
-//     public static String[] CURRENT_ROOM_MAP = new String[]{
-//     "########################################",
-//     "##....................................##",
-//     "##..S..............................1..##",
-//     "##......##......##....##......##......##",
-//     "##......##......##....##......##......##",
-//     "##....................................##",
-//     "##....................................##",
-//     "##..##......##............##......##..##",
-//     "##..##......##.....2......##......##..##",
-//     "##..........##............##..........##",
-//     "##....................................##",
-//     "##....................................##",
-//     "##..........##............##..........##",
-//     "##..##......##............##......##..##",
-//     "##..##......##............##......##..##",
-//     "##....................................##",
-//     "##....................................##",
-//     "##......##......##....##......##......##",
-//     "##......##......##....##...3..##......##",
-//     "##....................................##",
-//     "########################################"
-// };
-
-
-// TWIN_FORTRESS_MAP
-// public static String[] CURRENT_ROOM_MAP = new String[]{
-//     "########################################",
-//     "##S..##...................##..........##",
-//     "##...##...................##....1.....##",
-//     "##...##...................##..........##",
-//     "##...##.......#####.......##..........##",
-//     "##............#...#.......##...####...##",
-//     "##............#...#............#..#...##",
-//     "###############...##############..#...##",
-//     "##................................#...##",
-//     "##................................#...##",
-//     "###############...##############..#...##",
-//     "##............#...#............#..#...##",
-//     "##............#...#.......##...####...##",
-//     "##...##.......#####.......##..........##",
-//     "##...##...................##....2.....##",
-//     "##...##...................##..........##",
-//     "##...##...................##..........##",
-//     "##...##...................##..........##",
-//     "##...##...3...............##..........##",
-//     "##........................##..........##",
-//     "########################################"
-// };
-
-
-// SPIRAL_MAP
-public static String[] CURRENT_ROOM_MAP = new String[]{
-    "########################################",
-    "##....................................##",
-    "##.S..###############################.##",
-    "##....................................##",
-    "##.#####################################",
-    "##....................................##",
-    "#####################################.##",
-    "##....................................##",
-    "##.#####################################",
-    "##...................1................##",
-    "#####################################.##",
-    "##....................................##",
-    "##.#####################################",
-    "##....................................##",
-    "#####################################.##",
-    "##....................................##",
-    "##.#####################################",
-    "##...................................2##",
-    "########################################",
-    "########################################",
-    "########################################"
-};
-
-    public static boolean RIGHT_TO_LEFT = false;
-     
-    public static RaycastCave addComponentsToPane(Container pane) {
-         
-        if (!(pane.getLayout() instanceof BorderLayout)) {
-            pane.add(new JLabel("Container doesn't use BorderLayout!"));
-        }
-         
-        if (RIGHT_TO_LEFT) {
-            pane.setComponentOrientation(
-                    java.awt.ComponentOrientation.RIGHT_TO_LEFT);
-        }
-         
-        JButton button = new JButton("");
-     
-        // The Game Panel, big and in the centre
-        RaycastCave gamePanel = new RaycastCave();
-        pane.add(gamePanel, BorderLayout.CENTER);
-         
-        // Simple Controls UI
-        JPanel bottomPanel = new JPanel();
-        bottomPanel.add(new JLabel("ARROWS to Move | SPACE to Scan | Q to Wipe |'E' to Pick Up | 'R' to Drop"));
-        pane.add(bottomPanel, BorderLayout.PAGE_START);
         
-        GameDialogPanel dialogPanel = new GameDialogPanel();
-        pane.add(button, BorderLayout.LINE_START);
-         
-        button = new JButton("Long-Named Button 4 (PAGE_END)");
-        pane.add(button, BorderLayout.PAGE_END);
-         
-        button = new JButton("5 (LINE_END)");
-        pane.add(button, BorderLayout.LINE_END);
+        // We initialise the gameview with the room map, as the map is required for this to be able to display anything
 
-        System.out.println(Arrays.toString(pane.getComponents()));
+        private String[] CURRENT_ROOM_MAP;
 
-        return gamePanel;
+        public DisplayGame(String[] startMap) {
+            this.CURRENT_ROOM_MAP = startMap;
+        }
 
-                        // label1.setText("mouse pressed at point:"
-                                // + e.getX() + " " + e.getY());
-    }
+        public void updateMap(String[] newMap) {
+            this.CURRENT_ROOM_MAP = newMap;
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            JFrame frame = new JFrame("Lidar Zork Interface");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            this.repaint(); 
+        }
+
+
+        public static boolean RIGHT_TO_LEFT = false;
+        
+        public static DisplayGame addComponentsToPane(Container pane) {
             
-            RaycastCave gamePanel = addComponentsToPane(frame.getContentPane());
-            frame.pack();
-            frame.setLocationRelativeTo(null);
-            frame.setVisible(true);
+            if (!(pane.getLayout() instanceof BorderLayout)) {
+                pane.add(new JLabel("Container doesn't use BorderLayout!"));
+            }
             
+            if (RIGHT_TO_LEFT) {
+                pane.setComponentOrientation(
+                        java.awt.ComponentOrientation.RIGHT_TO_LEFT);
+            }
             
-            gamePanel.requestFocusInWindow();
-        });
-    }
+            JButton button = new JButton("");
+        
+            // The Game Panel, big and in the centre
+            DisplayGame gamePanel = new DisplayGame();
+            pane.add(gamePanel, BorderLayout.CENTER);
+            
+            // Simple Controls UI
+            JPanel bottomPanel = new JPanel();
+            bottomPanel.add(new JLabel("ARROWS to Move | SPACE to Scan | Q to Wipe |'E' to Pick Up | 'R' to Drop"));
+            pane.add(bottomPanel, BorderLayout.PAGE_START);
+            
+            GameDialogPanel dialogPanel = new GameDialogPanel();
+            pane.add(button, BorderLayout.LINE_START);
+            
+            button = new JButton("Long-Named Button 4 (PAGE_END)");
+            pane.add(button, BorderLayout.PAGE_END);
+            
+            button = new JButton("5 (LINE_END)");
+            pane.add(button, BorderLayout.LINE_END);
+
+            System.out.println(Arrays.toString(pane.getComponents()));
+
+            return gamePanel;
+
+                            // label1.setText("mouse pressed at point:"
+                                    // + e.getX() + " " + e.getY());
+        }
 
 
 
-    // ===================================
-    // Game logic
-    // ===================================
-    public static class RaycastCave extends JPanel {
-
+        
         private static final int SCREEN_W = 1000;
         private static final int SCREEN_H = 600;
         private static final double VIEW_ANGLE = Math.toRadians(90); 
@@ -198,22 +94,6 @@ public static String[] CURRENT_ROOM_MAP = new String[]{
         private static final int MAX_DOTS = 5000; // too many and the game gets too slow
 
 
-        public RaycastCave() {
-            setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
-            setBackground(Color.BLACK);
-            setFocusable(true);
-            
-            addMouseListener(new MouseAdapter() {
-                @Override
-                public void mousePressed(MouseEvent e) {
-                    requestFocusInWindow();
-                }
-            });
-
-            setupInput();
-            new Timer(16, e -> updateAndDraw()).start();
-        }
-
         private static int gameState=0;
         private static long start=0;
         private static long end=0;
@@ -233,8 +113,8 @@ public static String[] CURRENT_ROOM_MAP = new String[]{
             if (kRight) playerAngle += 0.07;
 
             // Movement
-            double dx = Math.cos(playerAngle) * 0.1;
-            double dy = Math.sin(playerAngle) * 0.1;
+            double dx = Math.cos(model.playerAngle) * 0.1;
+            double dy = Math.sin(model.playerAngle) * 0.1;
             
             // Collision Check (Very simple: look ahead)
             if (kUp) {
@@ -414,6 +294,8 @@ public static String[] CURRENT_ROOM_MAP = new String[]{
                 modifyMap(checkX, checkY, target.getC());
             }
         }
+
+        
         
 
         private void modifyMap(int x, int y, char newChar) {
@@ -528,4 +410,5 @@ public static String[] CURRENT_ROOM_MAP = new String[]{
             });
         }
     }
+
 }
