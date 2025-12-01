@@ -16,7 +16,7 @@ public abstract class Inventor {
         return inventory;
     }
 
-    // Abstract method that must be implemented by subclasses
+    // Abstract method that must be implemented by subclass?
     // public abstract void (Player player);
 
 }

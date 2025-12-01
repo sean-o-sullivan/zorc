@@ -23,6 +23,7 @@ public class Parser {
                 word2 = tokenizer.next();
             }
         }
+        tokenizer.close();
 
         if (commands.isCommand(word1)) {
             return new Command(word1, word2);

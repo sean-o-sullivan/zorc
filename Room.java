@@ -7,6 +7,7 @@ public class Room extends Inventor implements Serializable{
     private String floorPlan;
     private Map<String, Room> exits; // Map direction to neighboring Room
 
+    
     public Room(String description) {
         this.description = description;
         exits = new HashMap<>();

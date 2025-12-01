@@ -1,7 +1,7 @@
 import java.util.*;
 
 
-public class ZorkULGame {
+public class GameModel {
 
     private Map<String, Room> rooms = new HashMap<>();
     private List<Item> items = new ArrayList<>();
@@ -239,7 +239,6 @@ public class ZorkULGame {
         System.out.printf("You grab %s in %s.\n",
             toGrab.getName(), player.getCurrentRoom().getDescription());
     }
-
 
     private void stash(Command command) {
         if (!command.hasSecondWord()) {

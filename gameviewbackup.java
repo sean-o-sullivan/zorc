@@ -4,38 +4,115 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.LinkedList;
 
-public class BorderLayoutDemo {
+public class gameviewbackup {
     
     // This represents the "Room" data structure you requested.
     // In your full Zork game, every Room object would hold one of these arrays.
     // '1'-'9' are items, '#' are walls, '.' is empty space.
-    public static String[] CURRENT_ROOM_MAP = new String[]{
-        "########################################",
-        "##S.................##................##",
-        "##...#####...........#.......1........##",
-        "##..##...##...................####....##",
-        "##.##.....##.................##..##...##",
-        "##.#...2.....................#....#...##",
-        "##.#........................##....#...##",
-        "##.##.....##.......###......##...##...##",
-        "##..##...##.......##.##......#####....##",
-        "##...#####.......##...##..............##",
-        "##..............##.....##.............##",
-        "##..............#...3...#.............##",
-        "##.....####.....##.....##.............##",
-        "##....##..##.....##...................##",
-        "##....#....#......#####.......####....##",
-        "##....#....#.................##..##...##",
-        "##....##..##.................#....#...##",
-        "##.....####..................#....#...##",
-        "##...........................##..##...##",
-        "##............................####....##",
-        "########################################"
-    };
 
 
+    // public static String[] CURRENT_ROOM_MAP = new String[]{
+    //     "########################################",
+    //     "##S.................##................##",
+    //     "##...#####...........#.......1........##",
+    //     "##..##...##...................####....##",
+    //     "##.##.....##.................##..##...##",
+    //     "##.#...2.....................#....#...##",
+    //     "##.#........................##....#...##",
+    //     "##.##.....##.......###......##...##...##",
+    //     "##..##...##.......##.##......#####....##",
+    //     "##...#####.......##...##..............##",
+    //     "##..............##.....##.............##",
+    //     "##..............#...3...#.............##",
+    //     "##.....####.....##.....##.............##",
+    //     "##....##..##.....##...................##",
+    //     "##....#....#......#####.......####....##",
+    //     "##....#....#.................##..##...##",
+    //     "##....##..##.................#....#...##",
+    //     "##.....####..................#....#...##",
+    //     "##...........................##..##...##",
+    //     "##............................####....##",
+    //     "########################################"
+    // };
 
+// PILLAR_HALL_MAP
+//     public static String[] CURRENT_ROOM_MAP = new String[]{
+//     "########################################",
+//     "##....................................##",
+//     "##..S..............................1..##",
+//     "##......##......##....##......##......##",
+//     "##......##......##....##......##......##",
+//     "##....................................##",
+//     "##....................................##",
+//     "##..##......##............##......##..##",
+//     "##..##......##.....2......##......##..##",
+//     "##..........##............##..........##",
+//     "##....................................##",
+//     "##....................................##",
+//     "##..........##............##..........##",
+//     "##..##......##............##......##..##",
+//     "##..##......##............##......##..##",
+//     "##....................................##",
+//     "##....................................##",
+//     "##......##......##....##......##......##",
+//     "##......##......##....##...3..##......##",
+//     "##....................................##",
+//     "########################################"
+// };
+
+
+// TWIN_FORTRESS_MAP
+// public static String[] CURRENT_ROOM_MAP = new String[]{
+//     "########################################",
+//     "##S..##...................##..........##",
+//     "##...##...................##....1.....##",
+//     "##...##...................##..........##",
+//     "##...##.......#####.......##..........##",
+//     "##............#...#.......##...####...##",
+//     "##............#...#............#..#...##",
+//     "###############...##############..#...##",
+//     "##................................#...##",
+//     "##................................#...##",
+//     "###############...##############..#...##",
+//     "##............#...#............#..#...##",
+//     "##............#...#.......##...####...##",
+//     "##...##.......#####.......##..........##",
+//     "##...##...................##....2.....##",
+//     "##...##...................##..........##",
+//     "##...##...................##..........##",
+//     "##...##...................##..........##",
+//     "##...##...3...............##..........##",
+//     "##........................##..........##",
+//     "########################################"
+// };
+
+
+// SPIRAL_MAP
+public static String[] CURRENT_ROOM_MAP = new String[]{
+    "########################################",
+    "##....................................##",
+    "##.S..###############################.##",
+    "##....................................##",
+    "##.#####################################",
+    "##....................................##",
+    "#####################################.##",
+    "##....................................##",
+    "##.#####################################",
+    "##...................1................##",
+    "#####################################.##",
+    "##....................................##",
+    "##.#####################################",
+    "##....................................##",
+    "#####################################.##",
+    "##....................................##",
+    "##.#####################################",
+    "##...................................2##",
+    "########################################",
+    "########################################",
+    "########################################"
+};
 
     public static boolean RIGHT_TO_LEFT = false;
      
@@ -58,10 +135,10 @@ public class BorderLayoutDemo {
          
         // Simple Controls UI
         JPanel bottomPanel = new JPanel();
-        bottomPanel.add(new JLabel("ARROWS to Move | SPACE to Scan | W to Wipes |'E' to Pick Up | 'R' to Drop"));
+        bottomPanel.add(new JLabel("ARROWS to Move | SPACE to Scan | Q to Wipe |'E' to Pick Up | 'R' to Drop"));
         pane.add(bottomPanel, BorderLayout.PAGE_START);
         
-        button = new JButton("Button 3 (LINE_START)");
+        GameDialogPanel dialogPanel = new GameDialogPanel();
         pane.add(button, BorderLayout.LINE_START);
          
         button = new JButton("Long-Named Button 4 (PAGE_END)");
@@ -73,6 +150,9 @@ public class BorderLayoutDemo {
         System.out.println(Arrays.toString(pane.getComponents()));
 
         return gamePanel;
+
+                        // label1.setText("mouse pressed at point:"
+                                // + e.getX() + " " + e.getY());
     }
 
     public static void main(String[] args) {
@@ -113,19 +193,41 @@ public class BorderLayoutDemo {
                 this.x = x; this.y = y; this.color = c;
             }
         }
-        private List<Dot> dots = new ArrayList<>();
-        private static final int MAX_DOTS = 5000; // Keep dots forever-ish
+
+        private List<Dot> dots = new LinkedList<>(); // used the list interface referenc so I can swap for other implementations if needs be
+        private static final int MAX_DOTS = 5000; // too many and the game gets too slow
+
 
         public RaycastCave() {
             setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
             setBackground(Color.BLACK);
             setFocusable(true);
+            
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mousePressed(MouseEvent e) {
+                    requestFocusInWindow();
+                }
+            });
+
             setupInput();
             new Timer(16, e -> updateAndDraw()).start();
         }
 
+        private static int gameState=0;
+        private static long start=0;
+        private static long end=0;
+        private static long duration=0;
+
         // physics
         private void updateAndDraw() {
+
+            if (gameState==0){
+                start = System.nanoTime();
+                gameState=1;
+            }
+            duration = System.nanoTime() - start;
+
             // Rotation
             if (kLeft)  playerAngle -= 0.07;
             if (kRight) playerAngle += 0.07;
@@ -147,6 +249,15 @@ public class BorderLayoutDemo {
             if (kWipe) WipeMap();
             // Trigger repaint to call paintComponent
             repaint();
+
+            if (gameState==2){
+                end = System.nanoTime();
+                duration = end - start;
+
+                System.out.println("Time taken (ns): " + duration);
+
+            }
+
         }
 
         
@@ -220,8 +331,6 @@ public class BorderLayoutDemo {
             if (dots.size() > MAX_DOTS) dots.remove(0); // Oldest dot deleted
         }
 
-
-
         private boolChar getTile(double x, double y) {
 
             boolChar answer = new boolChar('#', true);
@@ -257,7 +366,6 @@ public class BorderLayoutDemo {
 
         }
 
-
         private class boolChar{
             char c;
             boolean b;
@@ -286,13 +394,20 @@ public class BorderLayoutDemo {
             int checkX = (int)(px + Math.cos(playerAngle) * 1.0);
             int checkY = (int)(py + Math.sin(playerAngle) * 1.0);
             
-            
             boolChar target = getTile(checkX, checkY);
 
             // Modify the map string string manually (String is immutable, so we rebuild the line)
             if (pickup && !target.getB()) {
                 System.out.println("Picked up item ID: " + target.getC());
                 modifyMap(checkX, checkY, '.');
+                
+                for (Dot dot : dots){
+                    if (((int)dot.x==checkX) && ((int)dot.y==checkY)){
+                        dots.remove(dot);
+                    }                 
+                }
+                // dots.remove(); //we need to remove the specific dot of the cell where the item used to be. so that when we pick it up and place it down its there....
+            // //no. the moment we place it down it will render itself 
             } 
             else if (!pickup && target.getC() == '.') {
                 System.out.printf("Dropped item ID: %s",target.getC());
@@ -316,7 +431,12 @@ public class BorderLayoutDemo {
 
             // Draw Background
             g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0, getWidth(), getHeight());
+            g2.fillRect(0, 0,  getWidth(),getHeight());
+            g2.setColor(Color.white);
+            String timer = ""+duration;
+
+            g2.drawString(timer, SCREEN_W/2, 40);
+            g2.setColor(Color.BLACK);
 
             // Draw all Dots, including those that are technically occluded but what the heck
             for (Dot d : dots) {
@@ -388,7 +508,7 @@ public class BorderLayoutDemo {
                         case KeyEvent.VK_LEFT:  kLeft = true; break;
                         case KeyEvent.VK_RIGHT: kRight = true; break;
                         case KeyEvent.VK_SPACE: kScan = true; break;
-                        case KeyEvent.VK_W: kWipe = true; break;
+                        case KeyEvent.VK_Q: kWipe = true; break;
                         
                         // Interface with "Preexisting Methods" logic
                         case KeyEvent.VK_E:     interactWithItem(true); break; // Pick up
@@ -402,7 +522,7 @@ public class BorderLayoutDemo {
                         case KeyEvent.VK_LEFT:  kLeft = false; break;
                         case KeyEvent.VK_RIGHT: kRight = false; break;
                         case KeyEvent.VK_SPACE: kScan = false; break;
-                        case KeyEvent.VK_W: kWipe = false; break;
+                        case KeyEvent.VK_Q: kWipe = false; break;
                     }
                 }
             });
