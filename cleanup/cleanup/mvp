@@ -1,0 +1,38 @@
+absolute mvp:
+
+    saving and loading functionality
+    home screen, and pause screen 
+    load from save screen
+
+            interface called jsonable, that requires save and load methods
+            
+
+    each item has its own unique color
+
+    text based inventory in the right
+
+    dialogue terminal on the side takes commands that map to actions you can take. 
+        we have a separate thread here that makes a typing animation in filling the dialog box with a log and a delayed loop
+
+
+    whenever you go to a new room its description is put in the terminal
+
+    wasd buttons, just like the pick up and drop
+
+    special character that's room boundary, where when you interact it lets you jump to the next room.
+
+
+
+    bring out askeaton gear for mom
+
+    sounds
+        whenever we move to a new room we put a trigger into a shared buffer and a different thread plays that sound
+
+    timing
+        we have a separate thread for timing each level
+
+
+    each room has a slightly different colour
+    
+    crafting
+    using items

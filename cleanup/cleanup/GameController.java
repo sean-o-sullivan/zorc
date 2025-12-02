@@ -11,8 +11,6 @@ public class GameController {
 
     public static void main(String[] args) {
 
-
-
         // index number of the item on the map corresponds to the index position of said item in the rooms inventory
         // need item inventory showing
         // need soundeffects
@@ -21,11 +19,41 @@ public class GameController {
 
         // need to make sure that the view keeps refreshing by itself. 
 
-        
-
+        // we need saving functionality, to json.                            
 
 
         // Load Maps
+
+        // i would rather more demonstration of my skills than unnecessarily adding npcs. 
+            // there be no need for npcs. lets try jazz this stuff up with sounds.
+    
+
+            // custom cursor icon?
+
+
+//             // LAN MULTIPLAYER, how long it takes you to complete the levels, thats shared, and perhaps synchronisation.
+
+//             lock.wait()
+
+//             private static final Object lock = new Object()`
+
+//             // ve could play the sonuds on a different thread when they need to be played 
+// // !!!!!!
+// // you have to own the lock in orfer 
+// // do we want a shop
+// eeeeeee 
+
+
+// we need an internal crafting setup that is polymorphic. 
+
+
+// lock.notifyAll();  -> need to make things like these. 
+
+/// use a do while!!!!!
+
+            // when you progress to the next level you choose what to make from the items you have, like what upgrade?
+            
+
         try { 
             loadMaps();
         } catch (Exception e) { 
@@ -42,7 +70,6 @@ public class GameController {
 
 
 
-
         // Listeners
         // ===============================
 
@@ -53,7 +80,7 @@ public class GameController {
         // ===============================
 
 
-    }
+
         // Key Listeners
         ui.gamePanel.addKeyListener(new KeyAdapter() {
             @Override
@@ -66,6 +93,7 @@ public class GameController {
                     case KeyEvent.VK_SPACE: model.kScan = true; break;
                     case KeyEvent.VK_E:     model.interactWithItem(true); break;
                     case KeyEvent.VK_R:     model.interactWithItem(false); break;
+                    case KeyEvent.VK_Q:     model.kWipe = true; break;
                 }
             }
             @Override
@@ -75,6 +103,10 @@ public class GameController {
                     case KeyEvent.VK_DOWN:  model.kDown = false; break;
                     case KeyEvent.VK_LEFT:  model.kLeft = false; break;
                     case KeyEvent.VK_RIGHT: model.kRight = false; break;
+                    case KeyEvent.VK_Q:     model.kWipe = false; break;
+                    case KeyEvent.VK_SPACE: model.kScan = false; break;
+
+
                 }
             }
         });
@@ -99,15 +131,15 @@ public class GameController {
 
         // Text Input Listener 
         ui.dialogPanel.addInputListener(e -> {
-            // 1. Get text from the new panel
+            // Get text from the new panel
             String text = ui.dialogPanel.getInputText(); 
             ui.dialogPanel.clearInput();
             
-            // 2. Process command
+            // Process command
             Command cmd = parser.getCommand(text); 
             processCommand(cmd, model); 
 
-            // 3. Echo result to the text area
+            // Echo result to the text area
             ui.dialogPanel.appendText("> " + text); 
             
             ui.gamePanel.requestFocusInWindow();
@@ -130,7 +162,7 @@ public class GameController {
                 ui.gamePanel.fireLidar();
             }
 
-            // Wipe dots from your imaginary memory if x is pressed
+            // Wipe dots from your imaginary memory if q is pressed
             if (model.kWipe) {
                 ui.gamePanel.wipeMap();
             }
@@ -139,9 +171,7 @@ public class GameController {
             ui.gamePanel.repaint();
 
         }).start();
-
     }
-
 
 
 

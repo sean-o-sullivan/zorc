@@ -197,18 +197,51 @@ public class GameModel {
     }
 
 
+    private boolean isValidMove(double x, double y) {
+        int ix = (int)x;
+        int iy = (int)y;
+
+        // Bounds check
+        if (iy < 0 || iy >= currentRoomMap.length) return false;
+        if (ix < 0 || ix >= currentRoomMap[0].length()) return false;
+
+        char tile = currentRoomMap[iy].charAt(ix);
+        
+        return tile != '#';
+    }
+
     // Physics Step
     public void updatePhysics() {
 
+        // rotation
         if (kLeft)  player.setAngle(player.getAngle() - 0.07);
-        if (kLeft)  player.setAngle(player.getAngle() + 0.07);
+        if (kRight) player.setAngle(player.getAngle() + 0.07); 
 
         double dx = Math.cos(player.getAngle()) * 0.1;
         double dy = Math.sin(player.getAngle()) * 0.1;
 
-        // Simple collision logic (checking bounds only for MVP)
-        if (kUp) { player.setPx(player.getPx() + dx);  player.setPy(player.getPy() + dy);} // we are walking forward
-        if (kDown) { player.setPx(player.getPx() - dx);  player.setPy(player.getPy() - dy);} // walking backwards
+        // translation
+        if (kUp) { 
+            double nextX = player.getPx() + dx;
+            double nextY = player.getPy() + dy;
+            
+            // Only move if valid
+            if (isValidMove(nextX, nextY)) {
+                player.setPx(nextX);
+                player.setPy(nextY);
+            }
+        }
+        
+        if (kDown) { 
+            double nextX = player.getPx() - dx;
+            double nextY = player.getPy() - dy;
+            
+            // Only move if valid
+            if (isValidMove(nextX, nextY)) {
+                player.setPx(nextX);
+                player.setPy(nextY);
+            }
+        } 
     }
 
         

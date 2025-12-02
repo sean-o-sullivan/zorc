@@ -47,7 +47,7 @@ public class GameView {
         return ctx;
     }
 
-
+    
     
     // 3. The Renderer Class
     public static class DisplayGame extends JPanel {

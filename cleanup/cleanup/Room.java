@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class Room extends Inventor implements Serializable{
     private String description;
-    private String floorPlan;
+
     private Map<String, Room> exits; // Map direction to neighboring Room
 
     
