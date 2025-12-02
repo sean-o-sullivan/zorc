@@ -2,52 +2,93 @@ import java.util.List;
 import java.util.*;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionListener;
 
 public class GameView {
 
-    // Data Transfer Object to pass components to Controller
+    // Helper class for Controller to access components
     public static class UIContext {
         public JFrame frame;
+        public JPanel mainContainer;
+        public CardLayout cardLayout;
+        
         public DisplayGame gamePanel;
+        public GameDialogPanel dialogPanel;
+        public InventoryPanel inventoryPanel;  // NEW
+        public StartScreen startScreen;
+        public PauseScreen pauseScreen;
+        
         public JButton btnPickUp;
         public JButton btnDrop;
-        public GameDialogPanel dialogPanel; 
+        public JComboBox<String> itemDropdown;
     }
 
+    public static UIContext createGameUI(GameModel model, 
+                                         ActionListener newGame, 
+                                         ActionListener loadGame,
+                                         ActionListener saveGame,
+                                         ActionListener resumeGame,
+                                         ActionListener quitToMenu)
+    {
 
-    public static UIContext createGameUI(GameModel model) {
         UIContext ctx = new UIContext();
-
         ctx.frame = new JFrame("MVC Zork Lidar");
         ctx.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        ctx.frame.setLayout(new BorderLayout());
+        
+        ctx.cardLayout = new CardLayout();
+        ctx.mainContainer = new JPanel(ctx.cardLayout);
 
-        // CENTER: The Game Map
+        JPanel gameContainer = new JPanel(new BorderLayout());
+        
         ctx.gamePanel = new DisplayGame(model);
-        ctx.frame.add(ctx.gamePanel, BorderLayout.CENTER);
+        gameContainer.add(ctx.gamePanel, BorderLayout.CENTER);
 
-        // WEST: The New Dialog Panel (Left Box)
+        // Left: Dialog Panel
         ctx.dialogPanel = new GameDialogPanel();
-        ctx.dialogPanel.setPreferredSize(new Dimension(250, 0)); // Set Width to 250px
-        ctx.frame.add(ctx.dialogPanel, BorderLayout.WEST);
+        ctx.dialogPanel.setPreferredSize(new Dimension(250, 0));
+        gameContainer.add(ctx.dialogPanel, BorderLayout.WEST);
 
-        // SOUTH: Buttons only (Input is now in the West panel)
+        // Right: Inventory Panel 
+        ctx.inventoryPanel = new InventoryPanel(model);
+        ctx.inventoryPanel.setPreferredSize(new Dimension(150, 0)); // Adjust width here
+        gameContainer.add(ctx.inventoryPanel, BorderLayout.EAST);
+
+        // Bottom: Buttons
         JPanel bottomPanel = new JPanel();
         ctx.btnPickUp = new JButton("Pick Up (E)");
+
+        // Add dropdown for item selection
+        ctx.itemDropdown = new JComboBox<>();
+        ctx.itemDropdown.setPreferredSize(new Dimension(200, 25));
+
         ctx.btnDrop = new JButton("Drop (R)");
-        
         bottomPanel.add(ctx.btnPickUp);
+        bottomPanel.add(new JLabel("Select Item:"));
+        bottomPanel.add(ctx.itemDropdown);
         bottomPanel.add(ctx.btnDrop);
+        gameContainer.add(bottomPanel, BorderLayout.SOUTH);
 
-        ctx.frame.add(bottomPanel, BorderLayout.SOUTH);
-        
+
+
+
+
+
+
+        ctx.startScreen = new StartScreen(newGame, loadGame);
+        ctx.pauseScreen = new PauseScreen(saveGame, resumeGame, quitToMenu);
+
+        ctx.mainContainer.add(ctx.startScreen, "MENU");
+        ctx.mainContainer.add(gameContainer, "GAME");
+        ctx.mainContainer.add(ctx.pauseScreen, "PAUSE");
+
+        ctx.frame.add(ctx.mainContainer);
         ctx.frame.pack();
-        ctx.frame.setLocationRelativeTo(null); 
-
+        ctx.frame.setLocationRelativeTo(null);
+        
         return ctx;
     }
 
-    
+
     
     // 3. The Renderer Class
     public static class DisplayGame extends JPanel {
@@ -118,8 +159,8 @@ public class GameView {
                 // 2. Rotate to face player's view (Standard rotation matrix)
                 double rotX = (rx * Math.cos(model.player.getAngle())) + (ry * Math.sin(model.player.getAngle()));
 
-                System.out.printf("%2f %2f %2f",rotX, rx * Math.cos(model.player.getAngle()), ry * Math.sin(model.player.getAngle()));
-                System.out.println();
+                // System.out.printf("%2f %2f %2f",rotX, rx * Math.cos(model.player.getAngle()), ry * Math.sin(model.player.getAngle()));
+                // System.out.println();
                 
                 double rotY = (rx * Math.sin(-model.player.getAngle())) + (ry * Math.cos(model.player.getAngle()));
 
@@ -304,3 +345,7 @@ public class GameView {
 
     }
 }
+
+
+
+
