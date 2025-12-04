@@ -5,6 +5,7 @@ import java.util.ArrayList;
 public class Room extends Inventor implements Jsonable {
 
     private int id;
+    private String name; 
     private String description;
     
     // Mapping keys (1-9) to Items.
@@ -19,6 +20,10 @@ public class Room extends Inventor implements Jsonable {
 
     public void setMap(String[] map) { this.mapLayout = map; }
     public String[] getMap() { return mapLayout; }
+
+
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
     // --- ID MANAGEMENT ---
 
@@ -91,10 +96,13 @@ public class Room extends Inventor implements Jsonable {
         }
         doorSb.append("}");
 
+
         return String.format(
-            "{\"id\": %d, \"name\": \"Room\", \"description\": \"%s\", \"inventory\": %s, \"map\": %s, \"doors\": %s}", 
-            id, description, invSb.toString(), mapSb.toString(), doorSb.toString()
+            "{\"id\": %d, \"name\": \"%s\", \"description\": \"%s\", \"inventory\": %s, \"map\": %s, \"doors\": %s}", 
+            id, name, description, invSb.toString(), mapSb.toString(), doorSb.toString()
         );
+
+
     }
 
     public Room getExit(String direction){ return null; }
@@ -102,6 +110,7 @@ public class Room extends Inventor implements Jsonable {
     @Override
     public void fromJson(String json) {
         this.id = Integer.parseInt(JsonParser.getValue(json, "id"));
+        this.name = JsonParser.getValue(json, "name"); 
         this.description = JsonParser.getValue(json, "description");
         
         // Load Inventory

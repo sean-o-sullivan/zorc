@@ -47,9 +47,21 @@ public void startGame() {
             timer.start();
             
             if (dialogArea != null) {
-               // ... (Your intro text here) ...
-               Typewriter.type(dialogArea, "System Online.");
+                Typewriter.type(dialogArea, "System Booting ..... \n\nINITIALIZING LIDAR... [OK] \n LOADING MAP DATA... ░░░░░░ 20%\n ... ▓▓▓▒▒░ 45%\nERROR: SECTOR 7 CORRUPTED >> 0xFA82 // ｱｲｳｴｵ\nRETRYING... ⣾⣽⣻⢿⡿⣟\nCONNECTION ESTABLISHED.\n\nLidar guidance system Online.\n\n Hello there! \n I am your lidar guidance system.... \n\nor L for short!\n\n We seem to have woken up in a liminal space... \n\n ... ... ...\n\n The space does have shape! \n\n We can map it! \n\s\s\s >Press SPACE to fire dots. \n\n And it seems that we can look around... \n\s\s\s Press ARROW_KEYS to navigate\n\n I sense there are in a series of interconnected rooms! \n\n Find 3 tokens to open portals. [ Ξ ] ... The portals appear dark on our lidar\n\n If the strain gets too large we can forget the dots \n\s\s\s >Press Q to forget dots\n\n And remember - \n\t move quickly!");
+            
+                try { 
+                        // This ensures the thread timing is consistent
+                        Thread.sleep(1);   
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }     
+
+                Typewriter.type(dialogArea, " \n\n\n\n\n\n\n"); 
             }
+            
+            
+            announceRoom();
+
             
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,13 +184,19 @@ public void startGame() {
             String idStr = JsonParser.getValue(cleanBlock, "id");
             if (idStr.isEmpty()) continue;
             
+
+
             int id = Integer.parseInt(idStr);
             String desc = JsonParser.getValue(cleanBlock, "description");
-            
+            String name = JsonParser.getValue(cleanBlock, "name"); 
+
+
             Room newRoom = new Room(desc);
             newRoom.setId(id);
+            newRoom.setName(name);
             rooms.put(String.valueOf(id), newRoom);
-            
+
+
             String mapArrayStr = JsonParser.getArrayContent(cleanBlock, "map");
             if (!mapArrayStr.isEmpty()) {
                 List<String> mapLines = new ArrayList<>();
@@ -408,8 +426,9 @@ public void startGame() {
                 player.setPy(5.0);
                 
                 SoundManager.triggerSfx(4); // Whoosh
-                if (dialogArea != null) Typewriter.type(dialogArea, "Entered: " + nextRoom.getDescription());
                 
+                announceRoom();
+ 
                 // Win Condition Check (Example: Room 6 is exit)
                 if(nextId == 6) {
                     SoundManager.playVictoryMusic();
@@ -418,6 +437,17 @@ public void startGame() {
                 }
             }
         }
+    }
+
+    private void announceRoom() {
+        new Thread(() -> {
+            try { Thread.sleep(1000); } catch (InterruptedException e) {}
+            if (dialogArea != null && player.getCurrentRoom() != null) {
+                String text = "Current Room (" + player.getCurrentRoom().getName() + ")\n" + 
+                              player.getCurrentRoom().getDescription();
+                Typewriter.type(dialogArea, text);
+            }
+        }).start();
     }
 
 

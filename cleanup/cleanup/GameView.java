@@ -230,6 +230,10 @@ public class GameView {
             }
             g2.drawString("TOKENS: " + model.player.getInventory().getList().size() + "/3", 20, 80);
 
+            if (model.player.getCurrentRoom() != null) {
+                g2.drawString("LOC: " + model.player.getCurrentRoom().getName(), 20, 110);
+            }  
+            
             // Draw Dots
             for (Dot d : dots) {
                 double rx = d.x - model.player.getPx();
@@ -302,7 +306,7 @@ public class GameView {
                         addDot(rayX, rayY, distance, Color.WHITE);
                     } 
                     else if ("NSEW".indexOf(tile.getC()) != -1) {
-                        addDot(rayX, rayY, distance, Color.BLACK); // Closed = Void
+                        addDot(rayX, rayY, distance, Color.DARK_GRAY); // Closed = Void
                     }
                     else if ("nsew".indexOf(tile.getC()) != -1) {
                         addDot(rayX, rayY, distance, new Color(138, 43, 226)); // Open = Purple
