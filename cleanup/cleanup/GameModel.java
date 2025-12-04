@@ -348,7 +348,11 @@ public void startGame() {
                 if (tile != '#' && tile != 'i' && tile != 'o') {
                     
                         // Check for OPEN Portals (I, O)
-                        if (tile == 'I' || tile == 'O') {
+
+                        if (tile == 'F') {
+                            triggerWin();
+                        }
+                        else if (tile == 'I' || tile == 'O') {
                             transitionRoom(String.valueOf(tile));
                         } else {
                             // Just walking
@@ -459,6 +463,9 @@ public void startGame() {
                 if (dialogArea != null) Typewriter.type(dialogArea, "Blocked. The path is closed.");
                 SoundManager.triggerSfx(2); 
             } 
+            else if (tile == 'F') {
+                triggerWin();
+            }
             // 2. Allow Open Portals
             else if (tile == 'I' || tile == 'O') {
                 transitionRoom(String.valueOf(tile));
@@ -561,7 +568,19 @@ public void startGame() {
         for(Room r : rooms.values()) {
             r.setMapSeed(finalSeed);
         }
+        
     }
+
+
+    private void triggerWin() {
+        if (gameState != 1) {
+            gameState = 1; // Set state to Won
+            SoundManager.playVictoryMusic();
+            if (timer != null) timer.stopTimer();
+            if (dialogArea != null) Typewriter.type(dialogArea, "\n\nCONNECTION TERMINATED.\nYOU HAVE ESCAPED.");
+        }
+    }
+
 
 
 }

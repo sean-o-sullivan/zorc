@@ -6,6 +6,9 @@ import java.awt.event.ActionListener;
 
 public class GameView {
 
+    
+
+
     public static class UIContext {
         public JFrame frame;
         public JPanel mainContainer;
@@ -229,24 +232,46 @@ public class GameView {
         private static final int MAX_DOTS = 5000; 
         private GameModel model;
 
+
+        private Image victoryImage;
+
         public DisplayGame(GameModel model) {
             this.model = model;
             setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
             setBackground(Color.BLACK);
             setFocusable(true); 
-        }
         
+        
+            try {
+                victoryImage = javax.imageio.ImageIO.read(new java.io.File("assets/victory.png"));
+            } catch (Exception e) {
+                System.out.println("Warning: victory.png not found in assets.");
+            }
+        }
+
+
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            if (model.getCurrentMap() == null) return;
-            if (model.player == null) return;
             
             Graphics2D g2 = (Graphics2D) g;
 
-            // Background
-            g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0,  getWidth(),getHeight());
+            if (model.gameState == 1) {
+                g2.setColor(Color.BLACK);
+                g2.fillRect(0, 0, getWidth(), getHeight());
+                
+                if (victoryImage != null) {
+                    g2.drawImage(victoryImage, 0, 0, getWidth(), getHeight(), this);
+                } else {
+                    g2.setColor(Color.GREEN);
+                    g2.drawString("VICTORY", getWidth()/2 - 50, getHeight()/2);
+                }
+                return; 
+            }
+            
+          
+            if (model.getCurrentMap() == null) return;
+            if (model.player == null) return;
             
             // Draw Dots
             for (Dot d : dots) {
