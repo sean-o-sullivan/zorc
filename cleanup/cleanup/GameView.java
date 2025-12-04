@@ -260,17 +260,35 @@ public class GameView {
                 g2.setColor(Color.BLACK);
                 g2.fillRect(0, 0, getWidth(), getHeight());
                 
+                // 1. Draw Image
                 if (victoryImage != null) {
                     g2.drawImage(victoryImage, 0, 0, getWidth(), getHeight(), this);
                     g2.setColor(Color.BLACK);
-                    g2.drawString("VICTORY", getWidth()/2 - 50, getHeight()/2);
-                } else {
-                    g2.setColor(Color.GREEN);
-                    g2.drawString("VICTORY", getWidth()/2 - 50, getHeight()/2);
+                    g2.drawString("VICTORY", getWidth()/2 - 50, (getHeight()/4)*1);
                 }
+                
+                // 2. Setup Font
+                g2.setFont(new Font("Monospaced", Font.PLAIN, 20));
+                FontMetrics fm = g2.getFontMetrics();
+                
+                // 3. Draw Time
+                g2.setColor(Color.BLACK);
+                String timeMsg = String.format("RUN TIME: %.2fs", model.timer.seconds);
+                int timeX = (getWidth() - fm.stringWidth(timeMsg)) / 2;
+                g2.drawString(timeMsg, timeX, -70+getHeight()/4);
+
+                g2.setFont(new Font("Monospaced", Font.PLAIN, 15));
+
+                // 4. Draw Seed (for verification)
+                g2.setColor(Color.BLACK);
+                String seedMsg = model.player.getCurrentRoom().getMapSeed();
+                int seedX = (getWidth() - fm.stringWidth(seedMsg)) / 2;
+                g2.drawString(seedMsg, seedX, -30+getHeight()/4);
+
                 return; 
             }
-            
+
+
           
             if (model.getCurrentMap() == null) return;
             if (model.player == null) return;

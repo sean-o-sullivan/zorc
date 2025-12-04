@@ -571,10 +571,10 @@ public void startGame() {
         
     }
 
-
     private void triggerWin() {
         if (gameState != 1) {
             gameState = 1; // Set state to Won
+            if (timer != null) timer.stopTimer(); 
             SoundManager.playVictoryMusic();
             if (timer != null) timer.stopTimer();
             if (dialogArea != null) Typewriter.type(dialogArea, "\n\nCONNECTION TERMINATED.\nYOU HAVE ESCAPED.");

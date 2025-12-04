@@ -14,7 +14,6 @@ public class GameController {
     public static List<String[]> all_maps = new ArrayList<>();
 
     private static Parser parser = new Parser(); // Static so we can use in main
-        
     private static GameView.UIContext ui;
     private static GameModel model;
     private static boolean isPaused = true; // Start paused/at menu
@@ -29,9 +28,7 @@ public class GameController {
 
         model = new GameModel();
         
-        // --- DEFINE ACTIONS ---
-        
-
+        // defining actions
         ActionListener actionNewGame = e -> {
 
             model.startGame(); 
