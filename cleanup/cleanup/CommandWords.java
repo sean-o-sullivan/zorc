@@ -14,18 +14,23 @@ public class CommandWords {
         validCommands.put("rummage", "Search you bag");
         validCommands.put("stash", "Stash an item in the current room");
         validCommands.put("grab", "Grab an item in the current room");
-        
+        validCommands.put("scan", "Fire Lidar burst");
+        validCommands.put("wipe", "Clear the map");   
     }
 
     public boolean isCommand(String commandWord) {
         return validCommands.containsKey(commandWord);
     }
 
-    public void showAll() {
-        System.out.print("Valid commands are: ");
+    public String returnAll() {
+        String cmds ="";
+        cmds+="Valid commands are: ";
+
         for (String command : validCommands.keySet()) {
-            System.out.print(command + " ");
+            cmds+=command+"";
         }
-        System.out.println();
+        cmds+="\n";
+        return cmds;
     }
+
 }

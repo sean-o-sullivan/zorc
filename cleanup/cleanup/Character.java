@@ -47,28 +47,18 @@ public class Character extends Inventor implements Jsonable {
         this.currentRoom = room;
     }
 
-    public void move(String direction) {
-        // Legacy support mostly, physics loop handles real movement now
-        Room nextRoom = currentRoom.getExit(direction);
-        if (nextRoom != null) {
-            currentRoom = nextRoom;
-            System.out.println("You moved to: " + currentRoom.getDescription());
-        } else {
-            System.out.println("You can't go that way!");
-        }
-    }
-
 
     @Override
     public String toJson() {
-        // 1. Get Room ID (0 if null)
+
+
         int roomId = (currentRoom != null) ? currentRoom.getId() : 0;
 
-        // 2. Build Inventory JSON Array
+        // Build Inventory 
         StringBuilder invSb = new StringBuilder();
         invSb.append("[");
         
-        // FIX: Access the internal list via getList()
+        // Access the internal list via getList()
         List<Item> items = inventory.getList();
         
         for (int i = 0; i < items.size(); i++) {
@@ -77,7 +67,7 @@ public class Character extends Inventor implements Jsonable {
         }
         invSb.append("]");
 
-        // 3. Return Full JSON Object
+        // Return Full JSON Object
         return String.format(
             "{\"name\": \"%s\", \"px\": %.2f, \"py\": %.2f, \"angle\": %.2f, \"currentRoomId\": %d, \"inventory\": %s}", 
             name, px, py, angle, roomId, invSb.toString()
@@ -97,9 +87,6 @@ public class Character extends Inventor implements Jsonable {
         if(!angleStr.isEmpty()) this.angle = Double.parseDouble(angleStr);
         
         // Note: Room linking happens in Controller via this ID
-        
-        // Load Inventory
-        // FIX: Access the internal list to clear it
         this.getInventory().getList().clear(); 
         
         String invArray = JsonParser.getArrayContent(json, "inventory");

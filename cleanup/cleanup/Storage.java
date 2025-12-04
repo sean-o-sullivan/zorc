@@ -4,10 +4,12 @@ import java.util.Map;
 
 // Generic indeed
 public class Storage<T extends Jsonable> {
+
     // For the player (Linear list)
     private ArrayList<T> list = new ArrayList<>();
     // For the Room (Mapped by ID)
     private Map<Integer, T> map = new HashMap<>();
+
 
     // arraylist operations, for player
     public void add(T item) { list.add(item); }
@@ -20,10 +22,12 @@ public class Storage<T extends Jsonable> {
     public void remove(int id) { map.remove(id); }
     public Map<Integer, T> getMap() { return map; }
     
+
     public int getNextFreeId() { // this is for the room id management
-        for (int i = 1; i <= 99; i++) { // we will not hit 99
+        for (int i = 1; i <= 99; i++) { // we will not hit 99, not here 
             if (!map.containsKey(i)) return i;
         }
         return -1; // Full
     }
+
 }

@@ -4,6 +4,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class SoundManager {
 
+    
     private static final String ASSET_PATH = "assets" + File.separator;
     
     // Define your music files here for easy changing

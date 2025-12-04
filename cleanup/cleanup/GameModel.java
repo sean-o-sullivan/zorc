@@ -453,5 +453,62 @@ public void startGame() {
     }
 
 
+    public void textCommandMove(String direction) {
+        // Multipliers to simulate "3 button presses" worth of action
+        double moveStep = 0.1 * 3.0; 
+        double rotStep = 0.07 * 3.0;
+
+        if (direction.equals("left")) {
+            player.setAngle(player.getAngle() - rotStep);
+            if (dialogArea != null) Typewriter.type(dialogArea, "You turn to the left.");
+            return;
+        }
+        
+        if (direction.equals("right")) {
+            player.setAngle(player.getAngle() + rotStep);
+            if (dialogArea != null) Typewriter.type(dialogArea, "You turn to the right.");
+            return;
+        }
+
+        // Handle Forward/Back
+        double dx = Math.cos(player.getAngle()) * moveStep;
+        double dy = Math.sin(player.getAngle()) * moveStep;
+
+        double nextX = player.getPx();
+        double nextY = player.getPy();
+
+        if (direction.equals("forward")) {
+            nextX += dx; nextY += dy;
+        } else if (direction.equals("back")) {
+            nextX -= dx; nextY -= dy;
+        }
+
+        int ix = (int)nextX;
+        int iy = (int)nextY;
+
+        // Boundary Check
+        if (iy >= 0 && iy < currentRoomMap.length && ix >= 0 && ix < currentRoomMap[0].length()) {
+            char tile = currentRoomMap[iy].charAt(ix);
+
+            if (tile == '#') {
+                if (dialogArea != null) Typewriter.type(dialogArea, "Ouch! You bumped into a wall.");
+                SoundManager.triggerSfx(2); // Bump sound (reusing drop sound for now)
+            } 
+            // Check for Portal Entry (Lowercase n, s, e, w)
+            else if ("nsew".indexOf(tile) != -1) {
+                transitionRoom(String.valueOf(tile));
+            } 
+            // Standard Walk
+            else if ("NSEW".indexOf(tile) == -1) {
+                player.setPx(nextX);
+                player.setPy(nextY);
+                if (dialogArea != null) Typewriter.type(dialogArea, "You step " + direction + ".");
+            }
+            else {
+                 if (dialogArea != null) Typewriter.type(dialogArea, "The door is locked.");
+            }
+        }
+    }
+
 
 }

@@ -4,36 +4,51 @@ import java.util.Map;
 
 public class GameActions {
 
+    private static javax.swing.JTextArea dialogArea;
+    private static String todo ="";
+
+    public static void setDialogArea(javax.swing.JTextArea area) {
+        dialogArea = area;
+    }
+
+    // Helper to redirect output to UI
+    private static void println(String text) {
+        if (dialogArea != null) Typewriter.type(dialogArea, text);
+        else println(text);
+    }
+
+
     public static void printHelp(Parser parser) {
-        System.out.println("You are lost. You are so terribly alone. You wander around the university.");
-        System.out.print("Your command words are: ");
-        parser.showCommands();
+        println("Your command words are: ");
+        todo =parser.showAll();
+        println(todo);
     }
 
     public static void search(Inventor target) { 
         String type = target.getClass().getSimpleName(); 
-        if (type.equals("Room")) System.out.println("You search the room…");
-        else if (type.equals("Character")) System.out.println("You rummage in your bag…");
+        if (type.equals("Room")) println("You search the room…  \n You find...");
+        else if (type.equals("Character")) println("You rummage in your bag… \n You find...");
 
-        // FIX: Combine items from both List (Player) and Map (Room) into one list for display
         Storage<Item> storage = target.getInventory();
         List<Item> allItems = new ArrayList<>(storage.getList());
         allItems.addAll(storage.getMap().values());
 
         if (allItems.isEmpty()) {
-            System.out.println("  You find only a speck of dust!");
-            return;
-        }
 
-        System.out.println("  You find:");
-        for (Item item : allItems) {
-            System.out.println("    " + item.getName() + " — " + item.getDescription());
+            println("   only a speck of dust!");
+            return;
+        } else{
+
+            for (Item i : allItems){
+                String desc = "\t"+i.getName()+": "+i.getDescription();
+                println(desc);
+            }
         }
     }
 
     public static void grab(Command command, Character player) {
         if (!command.hasSecondWord()) {
-            System.out.println("Grab what?");
+            println("Grab what?");
             return;
         }
 
@@ -53,7 +68,7 @@ public class GameActions {
         }
 
         if (toGrab == null) {
-            System.out.println("Alas! You don’t have that item!");
+            println("Alas! You don’t have that item!");
             return;
         }
 
@@ -69,9 +84,33 @@ public class GameActions {
     }
 
 
+    public static void scan(GameModel model) {
+        println("Initiating single Lidar sweep...");
+        model.kScan = true;
+        
+        // Turn off after 2 seconds
+        new javax.swing.Timer(2000, e -> {
+             model.kScan = false;
+             ((javax.swing.Timer)e.getSource()).stop();
+             println("Scan complete.");
+        }).start();
+    }
+
+    public static void wipe(GameModel model) {
+        println("Purging visual cache...");
+        model.kWipe = true;
+        
+        // Turn off quickly (just enough to clear the array)
+        new javax.swing.Timer(100, e -> {
+             model.kWipe = false;
+             ((javax.swing.Timer)e.getSource()).stop();
+        }).start();
+    }
+
+
     public static void stash(Command command, Character player) {
         if (!command.hasSecondWord()) {
-            System.out.println("Stash what?");
+            println("Stash what?");
             return;
         }
 
@@ -87,7 +126,7 @@ public class GameActions {
         }
 
         if (toStash == null) {
-            System.out.println("You don’t have that item!");
+            println("You don’t have that item!");
             return;
         }
 
@@ -100,29 +139,27 @@ public class GameActions {
         System.out.printf("You stash %s in %s.\n", toStash.getName(), player.getCurrentRoom().getDescription());
     }
 
-
-    public static void goRoom(Command command, Character player) {
+    public static void handleMove(Command command, GameModel model) {
         if (!command.hasSecondWord()) {
-            System.out.println("Go where?");
+            println("Go where? (forward, back, left, right)");
             return;
         }
 
-        String direction = command.getSecondWord();
-        // Uses the legacy exits map for text commands
-        Room nextRoom = player.getCurrentRoom().getExit(direction);
+        String dir = command.getSecondWord().toLowerCase();
 
-        if (nextRoom == null) {
-            // Fallback: Check the new doorTargets map if the legacy one is empty
-            if(player.getCurrentRoom().doorTargets.containsKey(direction)) {
-                // This requires access to the full room list to find the room object by ID
-                // For now, simpler text commands might fail if not using N/S/E/W specifically
-                System.out.println("The door is locked or does not exist.");
-            } else {
-                System.out.println("There is no door!");
-            }
+        // Map common synonyms
+        if (dir.equals("north") || dir.equals("n")) dir = "forward";
+        if (dir.equals("south") || dir.equals("s")) dir = "back";
+        if (dir.equals("west") || dir.equals("w"))  dir = "left";
+        if (dir.equals("east") || dir.equals("e"))  dir = "right";
+
+        // Validate
+        if (dir.equals("forward") || dir.equals("back") || dir.equals("left") || dir.equals("right")) {
+            model.textCommandMove(dir);
         } else {
-            player.setCurrentRoom(nextRoom);
-            System.out.println(player.getCurrentRoom().getLongDescription());
+            println("I don't know how to go '" + dir + "'. Try forward, back, left, or right.");
         }
     }
+
+
 }

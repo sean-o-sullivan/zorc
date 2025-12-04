@@ -21,51 +21,6 @@ public class GameController {
 
     private static int selectedIndex = 0;
 
-        // index number of the item on the map corresponds to the index position of said item in the rooms inventory
-        // need item inventory showing
-        // need soundeffects
-        // need unit tests !?
-        // need to integrate the dialogue panel
-
-        // need to make sure that the view keeps refreshing by itself. 
-
-        // we need saving functionality, to json.                            
-
-
-        // Load Maps
-
-        // i would rather more demonstration of my skills than unnecessarily adding npcs. 
-            // there be no need for npcs. lets try jazz this stuff up with sounds.
-    
-
-            // custom cursor icon?
-
-
-//             // LAN MULTIPLAYER, how long it takes you to complete the levels, thats shared, and perhaps synchronisation.
-
-//             lock.wait()
-
-//             private static final Object lock = new Object()`
-
-//             // ve could play the sonuds on a different thread when they need to be played 
-// // !!!!!!
-// // you have to own the lock in orfer 
-// // do we want a shop
-// eeeeeee 
-
-
-// we need an internal crafting setup that is polymorphic. 
-
-
-// lock.notifyAll();  -> need to make things like these. 
-
-/// use a do while!!!!!
-
-            // when you progress to the next level you choose what to make from the items you have, like what upgrade?
-            
-
-
-
     public static void main(String[] args) {
 
         SoundManager.init();
@@ -143,10 +98,12 @@ public class GameController {
         // Initialize UI with actions
         ui = GameView.createGameUI(model, actionNewGame, actionLoadGame, actionSaveGame, actionResume, actionQuitToMenu);
 
-        // --- ADD THIS LINE ---
         // Pass the text area from View to Model for the Typewriter
         model.setDialogArea(ui.dialogPanel.getDisplayArea()); // You might need to make getDisplayArea public in GameDialogPanel
         // --------------------
+        // INSERT THIS NEW LINE HERE:
+        GameActions.setDialogArea(ui.dialogPanel.getDisplayArea());
+
 
         // Listeners
         // ===============================
@@ -234,9 +191,11 @@ public class GameController {
             String text = ui.dialogPanel.getInputText(); 
             ui.dialogPanel.clearInput();
             
+            System.out.println(text);
             // Process command
             Command cmd = parser.getCommand(text); 
             processCommand(cmd, model); 
+            System.out.println(cmd);
 
             // Echo result to the text area
             ui.dialogPanel.appendText("> " + text); 
@@ -349,16 +308,19 @@ public static void loadMaps() throws IOException {
     // Clean Command Processor using the Static Class we made earlier
     private static void processCommand(Command command, GameModel model) {
         String word = command.getCommandWord();
-        if (word == null) return;
 
+        if (word == null)         {System.out.println("no word"); return;}
+        System.out.println(word);
         switch (word) {
             case "help":    GameActions.printHelp(parser); break;
-            case "go":      GameActions.goRoom(command, model.player); break;
+            case "go":      GameActions.handleMove(command, model); break;
             case "search":  GameActions.search(model.player.getCurrentRoom()); break;
             case "rummage": GameActions.search(model.player); break;
             case "stash":   GameActions.stash(command, model.player); break;
             case "grab":    GameActions.grab(command, model.player); break;
             case "quit":    System.exit(0); break;
+            case "scan":    GameActions.scan(model); break;
+            case "wipe":    GameActions.wipe(model); break;
             default:        System.out.println("Unknown command."); break;
         }
     }
