@@ -16,6 +16,8 @@ public class GameModel {
 
     public String currentSeed = "SEED: N/A";
 
+    
+
     public Character player; 
     public String[] currentRoomMap; // This is just a pointer to the Room's map
     public int gameState = 0;
@@ -552,6 +554,7 @@ public void startGame() {
             room.setMap(map);
             incomingDir = exitDir; // Set up for next room
         }
+
 
         // 5. Save the seed to every room so the HUD can always find it
         String finalSeed = "SEED: " + globalSeed.toString();
