@@ -41,7 +41,6 @@ public class GameController {
             ui.gamePanel.requestFocusInWindow();
         };
 
-        
 
         ActionListener actionLoadGame = e -> {
             String filename = StartScreen.showLoadDialog(ui.frame);
@@ -126,6 +125,8 @@ public class GameController {
                     case KeyEvent.VK_E:   model.interactWithItem(true, 0);  ui.inventoryPanel.updateInventory(model); ui.inventoryPanel.updateDropdown(model, ui.itemDropdown); break;
                     case KeyEvent.VK_R:     model.interactWithItem(false, 0);  ui.inventoryPanel.updateInventory(model); break;
                     case KeyEvent.VK_Q:     model.kWipe = true; break;
+                    case KeyEvent.VK_N:     cheatNextLevel(model); break;
+
                 }
                 System.out.println(model.kScan);
             }
@@ -419,6 +420,39 @@ public static void loadGame(GameModel model, String filename) {
             
         } catch (IOException e) {
             System.out.println("No save file found: " + filename);
+        }
+    }
+
+
+    // --- GOD MODE LOGIC ---
+    private static void cheatNextLevel(GameModel model) {
+        Room current = model.player.getCurrentRoom();
+        if (current == null) return;
+
+        int nextId = current.getId() + 1;
+        Room nextRoom = model.getRooms().get(String.valueOf(nextId));
+
+        if (nextRoom != null) {
+            model.player.setCurrentRoom(nextRoom);
+            model.setMap(nextRoom.getMap());
+            SoundManager.triggerSfx(4); // Whoosh sound
+
+            // --- HARDCODED COORDINATES FOR FINAL ROOM (Room 6) ---
+            if (nextId == 6) {
+                model.player.setPx(35.0); 
+                model.player.setPy(18.0);
+                model.player.setAngle(0.0); // 0.0 = Facing East
+            } 
+            // ----------------------------------------------------
+            else {
+                // Default spawn for other levels
+                model.player.setPx(5.0);
+                model.player.setPy(5.0);
+            }
+            
+            System.out.println("God Mode: Warped to Room " + nextId);
+        } else {
+            System.out.println("God Mode: No next room exists.");
         }
     }
 

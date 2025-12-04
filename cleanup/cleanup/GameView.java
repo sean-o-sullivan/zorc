@@ -243,7 +243,7 @@ public class GameView {
         
         
             try {
-                victoryImage = javax.imageio.ImageIO.read(new java.io.File("assets/victory.png"));
+                victoryImage = javax.imageio.ImageIO.read(new java.io.File("assets/victory.jpg"));
             } catch (Exception e) {
                 System.out.println("Warning: victory.png not found in assets.");
             }
@@ -262,6 +262,8 @@ public class GameView {
                 
                 if (victoryImage != null) {
                     g2.drawImage(victoryImage, 0, 0, getWidth(), getHeight(), this);
+                    g2.setColor(Color.BLACK);
+                    g2.drawString("VICTORY", getWidth()/2 - 50, getHeight()/2);
                 } else {
                     g2.setColor(Color.GREEN);
                     g2.drawString("VICTORY", getWidth()/2 - 50, getHeight()/2);
@@ -416,25 +418,13 @@ public class GameView {
                     answer.setB(false);
                     answer.setC(cha);
                     break;
-                
-                case '#':  // wall
-                     answer.setB(true);
-                     answer.setC('#');
-                     break;
 
-                // Locked Doors (Solid)
-                case 'i': case 'o':
+                //  (Solid)
+                case '#': case 'i': case 'o': case 'I': case 'O': case 'F':
                     answer.setB(true); 
                     answer.setC(cha);
-                    break;
+                    break;                    
 
-                // Open Portals (Solid)
-                case 'I': case 'O':
-                    answer.setB(true); 
-                    answer.setC(cha);
-                    break;
-                    
-                    
                 default:
                     answer.setB(true);
                     answer.setC('#');
