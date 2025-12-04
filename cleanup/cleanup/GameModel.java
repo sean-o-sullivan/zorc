@@ -14,6 +14,8 @@ public class GameModel {
 
     private Map<String, Room> rooms = new HashMap<>();
 
+    public String currentSeed = "SEED: N/A";
+
     public Character player; 
     public String[] currentRoomMap; // This is just a pointer to the Room's map
     public int gameState = 0;
@@ -38,11 +40,8 @@ public void startGame() {
             loadWorldFromJson("game-info.json");
             
             // Remove the randomizer. We trust the JSON.
-            // randomizeDoors(); 
-            
-            // CLEAN UP THE MAP: Turn visual 'N' into '#' if no logical connection exists
-            pruneInvalidDoors(); 
-            
+            generateLinearPath(); 
+                        
             // Start Timer Thread
             timer = new GameTimer(); 
             timer.start();
@@ -70,59 +69,6 @@ public void startGame() {
         }
     }
 
-    // NEW METHOD: Ensures the visual map matches the logical connections
-    private void pruneInvalidDoors() {
-        for (Room r : rooms.values()) {
-            String[] map = r.getMap();
-            if (map == null) continue;
-            
-            boolean roomModified = false;
-            for (int y = 0; y < map.length; y++) {
-                char[] row = map[y].toCharArray();
-                boolean rowModified = false;
-                
-                for (int x = 0; x < row.length; x++) {
-                    char c = row[x];
-                    // If visual map has a door...
-                    if ("NSEW".indexOf(c) != -1) {
-                        // ...but logic says no door exists...
-                        if (!r.doorTargets.containsKey(String.valueOf(c))) {
-                            row[x] = '#'; // Brick it up
-                            rowModified = true;
-                        }
-                    }
-                }
-                
-                if (rowModified) {
-                    map[y] = new String(row);
-                    roomModified = true;
-                }
-            }
-            if (roomModified) r.setMap(map);
-        }
-    }
-
-    
-    // Naive implementation: Randomly links doors 
-    private void randomizeDoors() {
-        List<Integer> ids = new ArrayList<>();
-        for(String s : rooms.keySet()) ids.add(Integer.parseInt(s));
-        
-        for(Room r : rooms.values()) {
-            Collections.shuffle(ids);
-            // Assign N, S, E, W to random IDs
-            r.doorTargets.put("N", ids.get(0));
-            r.doorTargets.put("S", ids.get(1));
-            r.doorTargets.put("E", ids.get(2));
-            r.doorTargets.put("W", ids.get(3));
-            
-            // Also map the lowercase versions so when we unlock them, the link remains
-            r.doorTargets.put("n", ids.get(0));
-            r.doorTargets.put("s", ids.get(1));
-            r.doorTargets.put("e", ids.get(2));
-            r.doorTargets.put("w", ids.get(3));
-        }
-    }
 
     private void loadWorldFromJson(String filename) throws IOException {
         String content = new String(Files.readAllBytes(Paths.get(filename)));
@@ -295,7 +241,7 @@ public void startGame() {
         return count;
     }
 
-    // --- REWRITTEN INTERACTION LOGIC ---
+
     public void interactWithItem(boolean pickup, int targetIndex) {
         int cx = (int)(player.getPx() + Math.cos(player.getAngle()));
         int cy = (int)(player.getPy() + Math.sin(player.getAngle()));
@@ -342,33 +288,33 @@ public void startGame() {
             }
         }
         
-        // 3. UNLOCK DOOR (N, S, E, W)
-        else if (pickup && "NSEW".indexOf(targetChar) != -1) {
+        // 3. UNLOCK DOOR (i, o)
+        else if (pickup && "io".indexOf(targetChar) != -1) {
             // Check essential manna (3 items)
             if (player.getInventory().getList().size() >= 3) {
-                // Change N -> n
-                // FIX: Explicitly call java.lang.Character
-                char openChar = java.lang.Character.toLowerCase(targetChar);
+                
+                // PAY THE TOLL: Remove 3 items
+                // We remove the first 3 items in the list
+                for(int i=0; i<3; i++) {
+                    if (!player.getInventory().getList().isEmpty()) {
+                        player.getInventory().getList().remove(0);
+                    }
+                }
+
+                // Change lower -> Upper (i->I, o->O)
+                char openChar = java.lang.Character.toUpperCase(targetChar);
                 modifyMap(cx, cy, openChar);
                 
                 SoundManager.triggerSfx(3); // Unlock Sound
-                if (dialogArea != null) Typewriter.type(dialogArea, "Gate Unlocked! The path is clear.");
+                if (dialogArea != null) Typewriter.type(dialogArea, "Tokens consumed. The portal destabilizes and opens!");
                 
             } else {
-                SoundManager.triggerSfx(2); // Error/Drop sound used as deny
-                if (dialogArea != null) Typewriter.type(dialogArea, "Locked. You need 3 tokens to open this.");
+                SoundManager.triggerSfx(2); // Error sound
+                if (dialogArea != null) Typewriter.type(dialogArea, "Locked. You need 3 tokens to stabilise this portal.");
             }
         }
     }
 
-    private boolean isValidMove(double x, double y) {
-        int ix = (int)x;
-        int iy = (int)y;
-        if (iy < 0 || iy >= currentRoomMap.length) return false;
-        if (ix < 0 || ix >= currentRoomMap[0].length()) return false;
-        char tile = currentRoomMap[iy].charAt(ix);
-        return tile != '#';
-    }
 
     // --- REWRITTEN PHYSICS & ROOM TRANSITION ---
     public void updatePhysics() {
@@ -393,53 +339,72 @@ public void startGame() {
 
             // Boundary Check
             if (iy >= 0 && iy < currentRoomMap.length && ix >= 0 && ix < currentRoomMap[0].length()) {
+               
+               
+               
                 char tile = currentRoomMap[iy].charAt(ix);
 
                 // Standard Collision
-                if (tile != '#' && "NSEW".indexOf(tile) == -1) {
+                if (tile != '#' && tile != 'i' && tile != 'o') {
                     
-                    // Check for Portal Entry (Lowercase n, s, e, w)
-                    if ("nsew".indexOf(tile) != -1) {
-                        transitionRoom(String.valueOf(tile));
-                    } else {
-                        // Just walking
-                        player.setPx(nextX);
-                        player.setPy(nextY);
-                    }
+                        // Check for OPEN Portals (I, O)
+                        if (tile == 'I' || tile == 'O') {
+                            transitionRoom(String.valueOf(tile));
+                        } else {
+                            // Just walking
+                            player.setPx(nextX);
+                            player.setPy(nextY);
+                        }
+                
+
                 }
             }
         }
     }
     
-    // Moves player to the next room
-    private void transitionRoom(String dir) {
+// REWRITE the method to handle I/O logic
+    private void transitionRoom(String type) {
         Room current = player.getCurrentRoom();
-        if(current.doorTargets.containsKey(dir)) {
-            int nextId = current.doorTargets.get(dir);
-            Room nextRoom = rooms.get(String.valueOf(nextId));
+        int currentId = current.getId();
+        int nextId = -1;
+
+        if (type.equals("O")) {
+            nextId = currentId + 1; // Go Forward
+        } else if (type.equals("I")) {
+            nextId = currentId - 1; // Go Back
+        }
+
+        // Safety check
+        Room nextRoom = rooms.get(String.valueOf(nextId));
+        
+        if (nextRoom != null) {
+            player.setCurrentRoom(nextRoom);
+            this.currentRoomMap = nextRoom.getMap(); // Update visual pointer
             
-            if(nextRoom != null) {
-                player.setCurrentRoom(nextRoom);
-                // CRITICAL: Update the map pointer to the new room's map
-                this.currentRoomMap = nextRoom.getMap();
-                
-                // Reset Position to center to avoid getting stuck in wall/door
-                player.setPx(5.0); 
-                player.setPy(5.0);
-                
-                SoundManager.triggerSfx(4); // Whoosh
-                
-                announceRoom();
- 
-                // Win Condition Check (Example: Room 6 is exit)
-                if(nextId == 6) {
-                    SoundManager.playVictoryMusic();
-                    if (dialogArea != null) Typewriter.type(dialogArea, "VICTORY! You have escaped.");
-                    gameState = 1; // End state
-                }
+            // Reset Position
+            player.setPx(5.0); 
+            player.setPy(5.0);
+            
+            SoundManager.triggerSfx(4); // Whoosh
+            announceRoom();
+
+            // Win Condition (Room 6 is the last room index)
+            if (nextId == 6 && type.equals("O")) { 
+                // Wait, if we walk INTO room 6 via 'O' from room 5, that's fine.
+                // But usually you win by exiting the final room.
+                // Let's say reaching Room 6 is the "Final Level" and exiting it ends game.
+                // For now, let's keep it simple: If you enter Room 6, you win? 
+                // Or maybe Room 6 has an exit 'O' that leads to id 7 (which doesn't exist)?
+            }
+            // Better Win Condition:
+            if (nextId >= rooms.size()) {
+                SoundManager.playVictoryMusic();
+                if (dialogArea != null) Typewriter.type(dialogArea, "VICTORY! You have escaped.");
+                gameState = 1;
             }
         }
     }
+
 
     private void announceRoom() {
         new Thread(() -> {
@@ -490,23 +455,111 @@ public void startGame() {
         if (iy >= 0 && iy < currentRoomMap.length && ix >= 0 && ix < currentRoomMap[0].length()) {
             char tile = currentRoomMap[iy].charAt(ix);
 
-            if (tile == '#') {
-                if (dialogArea != null) Typewriter.type(dialogArea, "Ouch! You bumped into a wall.");
-                SoundManager.triggerSfx(2); // Bump sound (reusing drop sound for now)
+            if (tile == '#' || tile == 'i' || tile == 'o') {
+                if (dialogArea != null) Typewriter.type(dialogArea, "Blocked. The path is closed.");
+                SoundManager.triggerSfx(2); 
             } 
-            // Check for Portal Entry (Lowercase n, s, e, w)
-            else if ("nsew".indexOf(tile) != -1) {
+            // 2. Allow Open Portals
+            else if (tile == 'I' || tile == 'O') {
                 transitionRoom(String.valueOf(tile));
-            } 
-            // Standard Walk
-            else if ("NSEW".indexOf(tile) == -1) {
+            }
+            // 3. Allow Walking (Floor, Items, Legacy NSEW)
+            else {
                 player.setPx(nextX);
                 player.setPy(nextY);
                 if (dialogArea != null) Typewriter.type(dialogArea, "You step " + direction + ".");
             }
-            else {
-                 if (dialogArea != null) Typewriter.type(dialogArea, "The door is locked.");
+
+        }
+    }
+
+
+    // 0=N, 1=E, 2=S, 3=W
+    private int getOpposite(int dir) { return (dir + 2) % 4; }
+
+    private int getDirFromChar(char c) {
+        switch(java.lang.Character.toUpperCase(c)) {
+            case 'N': return 0;
+            case 'E': return 1;
+            case 'S': return 2;
+            case 'W': return 3;
+            default: return -1;
+        }
+    }
+
+    
+    private void generateLinearPath() {
+        java.util.Random rand = new java.util.Random();
+        StringBuilder globalSeed = new StringBuilder();
+        int incomingDir = -1; // -1 means no entry (Start of game)
+
+        // Iterate through rooms 0 to 6
+        int maxRooms = rooms.size();
+
+        for (int i = 0; i < maxRooms; i++) {
+            Room room = rooms.get(String.valueOf(i));
+            if (room == null) continue;
+
+            String[] map = room.getMap();
+            
+            // 1. Find all available doors in the JSON map
+            List<Integer> availableExits = new ArrayList<>();
+            for(String row : map) {
+                if(row.contains("N")) if(!availableExits.contains(0)) availableExits.add(0);
+                if(row.contains("E")) if(!availableExits.contains(1)) availableExits.add(1);
+                if(row.contains("S")) if(!availableExits.contains(2)) availableExits.add(2);
+                if(row.contains("W")) if(!availableExits.contains(3)) availableExits.add(3);
             }
+
+            // 2. Determine Entry (Must match previous room's exit)
+            int entryDir = -1;
+            if (incomingDir != -1) {
+                entryDir = getOpposite(incomingDir);
+                // The entry MUST be preserved, so remove it from the list of possible *Exits*
+                availableExits.remove((Integer)entryDir); 
+            }
+
+            // 3. Pick an Exit (Randomly)
+            int exitDir = -1;
+            if (i < maxRooms - 1) { // If not the final room
+                if (!availableExits.isEmpty()) {
+                    exitDir = availableExits.get(rand.nextInt(availableExits.size()));
+                    globalSeed.append(exitDir); // Add to seed string
+                } else {
+                    System.err.println("Map Generation Error: Dead End in Room " + i);
+                }
+            } else {
+                globalSeed.append("X"); // End of game
+            }
+
+            // 4. Modify the Map Array (The "Baking" process)
+            for (int y = 0; y < map.length; y++) {
+                char[] row = map[y].toCharArray();
+                for (int x = 0; x < row.length; x++) {
+                    char c = java.lang.Character.toUpperCase(row[x]);
+                    if ("NSEW".indexOf(c) != -1) {
+                        int currentDir = getDirFromChar(c);
+                        
+                        if (currentDir == entryDir) {
+                            row[x] = 'I'; // IN (Backwards)
+                        } else if (currentDir == exitDir) {
+                            row[x] = 'o'; // OUT (Forwards)
+                        } else {
+                            row[x] = '.'; // Remove unused door
+                        }
+                    }
+                }
+                map[y] = new String(row);
+            }
+            
+            room.setMap(map);
+            incomingDir = exitDir; // Set up for next room
+        }
+
+        // 5. Save the seed to every room so the HUD can always find it
+        String finalSeed = "SEED: " + globalSeed.toString();
+        for(Room r : rooms.values()) {
+            r.setMapSeed(finalSeed);
         }
     }
 

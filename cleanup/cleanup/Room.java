@@ -1,4 +1,3 @@
-import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 
@@ -10,24 +9,34 @@ public class Room extends Inventor implements Jsonable {
     
     // Mapping keys (1-9) to Items.
     private String[] mapLayout; 
-    
-    // Stores which Room ID a door leads to. Key="N", Value=targetRoomId
-    public Map<String, Integer> doorTargets = new HashMap<>(); 
 
     public Room(String description) {
         this.description = description;
     }
 
+
+    private String mapSeed = ""; // Stores the global randomization string
+
+    public String getMapSeed() { return mapSeed; }
+    public void setMapSeed(String mapSeed) { this.mapSeed = mapSeed; }
+
+
     public void setMap(String[] map) { this.mapLayout = map; }
     public String[] getMap() { return mapLayout; }
-
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    // --- ID MANAGEMENT ---
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+    public String getDescription() { return description; }
 
-    // Finds the next free number (1-9) to put an item on the map
+    public String getLongDescription() {
+        return "You are " + description;
+    }
+
+    // --- ID MANAGEMENT FOR ITEMS ---
+
     public int getNextFreeSlot() {
         for(int i=1; i<=9; i++) {
             if(!inventory.getMap().containsKey(i)) return i;
@@ -35,7 +44,6 @@ public class Room extends Inventor implements Jsonable {
         return -1; // Full
     }
 
-    // THE MISSING METHOD: Finds a slot and adds the item
     public int addItemToRoom(Item item) {
         int slot = getNextFreeSlot();
         if (slot != -1) {
@@ -49,20 +57,11 @@ public class Room extends Inventor implements Jsonable {
     public void removeItemFromSlot(int slot) { inventory.remove(slot); }
     public Item getItemFromSlot(int slot) { return inventory.get(slot); }
     
-    // ------------------------
-
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-    public String getDescription() { return description; }
-
-    public String getLongDescription() {
-        return "You are " + description;
-    }
-
+    // --- JSON SAVING/LOADING ---
     
     @Override
     public String toJson() {
-        // 1. Save Inventory (Map Based)
+        // 1. Save Inventory
         StringBuilder invSb = new StringBuilder();
         invSb.append("[");
         int count = 0;
@@ -74,7 +73,7 @@ public class Room extends Inventor implements Jsonable {
         }
         invSb.append("]");
 
-        // 2. Save Map Layout (Essential for persistence!)
+        // 2. Save Map Layout (This now includes your I/O characters)
         StringBuilder mapSb = new StringBuilder();
         mapSb.append("[");
         if (mapLayout != null) {
@@ -85,34 +84,22 @@ public class Room extends Inventor implements Jsonable {
         }
         mapSb.append("]");
         
-        // 3. Save Connections (Essential so we don't re-randomize on load)
-        StringBuilder doorSb = new StringBuilder();
-        doorSb.append("{");
-        int dCount = 0;
-        for(Map.Entry<String, Integer> e : doorTargets.entrySet()) {
-            doorSb.append("\"").append(e.getKey()).append("\": ").append(e.getValue());
-            if(dCount < doorTargets.size()-1) doorSb.append(", ");
-            dCount++;
-        }
-        doorSb.append("}");
-
-
+        // REPLACE the return statement in toJson() with this:
         return String.format(
-            "{\"id\": %d, \"name\": \"%s\", \"description\": \"%s\", \"inventory\": %s, \"map\": %s, \"doors\": %s}", 
-            id, name, description, invSb.toString(), mapSb.toString(), doorSb.toString()
+            "{\"id\": %d, \"name\": \"%s\", \"description\": \"%s\", \"inventory\": %s, \"map\": %s, \"seed\": \"%s\"}", 
+            id, name, description, invSb.toString(), mapSb.toString(), mapSeed
         );
 
 
     }
-
-    public Room getExit(String direction){ return null; }
 
     @Override
     public void fromJson(String json) {
         this.id = Integer.parseInt(JsonParser.getValue(json, "id"));
         this.name = JsonParser.getValue(json, "name"); 
         this.description = JsonParser.getValue(json, "description");
-        
+        this.mapSeed = JsonParser.getValue(json, "seed");
+
         // Load Inventory
         this.getInventory().getMap().clear();
         String invArray = JsonParser.getArrayContent(json, "inventory");
@@ -138,16 +125,6 @@ public class Room extends Inventor implements Jsonable {
             this.mapLayout = mapLines.toArray(new String[0]);
         }
         
-        // Load Connections
-        String doorStr = JsonParser.getObjectContent(json, "doors"); 
-        if(!doorStr.isEmpty()) {
-            String[] dirs = {"N", "S", "E", "W", "n", "s", "e", "w"};
-            for(String d : dirs) {
-                String val = JsonParser.getValue(doorStr, d);
-                if(!val.isEmpty()) doorTargets.put(d, Integer.parseInt(val));
-            }
-        }
+        // No longer loading "doors"
     }
-
-
 }

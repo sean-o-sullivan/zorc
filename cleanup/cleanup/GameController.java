@@ -35,10 +35,6 @@ public class GameController {
         ActionListener actionNewGame = e -> {
 
             model.startGame(); 
-            
-            if (!all_maps.isEmpty()) {
-                model.setMap(all_maps.get(0));
-            }
                         
             isPaused = false;
             ui.cardLayout.show(ui.mainContainer, "GAME");

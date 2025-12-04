@@ -248,24 +248,6 @@ public class GameView {
             g2.setColor(Color.BLACK);
             g2.fillRect(0, 0,  getWidth(),getHeight());
             
-            // HUD
-            g2.setColor(Color.GREEN);
-            g2.setFont(new Font("Monospaced", Font.BOLD, 20));
-
-            if (model.timer != null) {
-
-                String formattedTime = String.format("%.1f", model.timer.seconds);
-
-                g2.drawString("TIME: " + formattedTime + "s", 20, 50);
-            }
-
-
-            g2.drawString("TOKENS: " + model.player.getInventory().getList().size() + "/3", 20, 80);
-
-            if (model.player.getCurrentRoom() != null) {
-                g2.drawString("LOC: " + model.player.getCurrentRoom().getName(), 20, 110);
-            }  
-            
             // Draw Dots
             for (Dot d : dots) {
                 double rx = d.x - model.player.getPx();
@@ -303,6 +285,29 @@ public class GameView {
                 g2.fillRect(screenX - width/2, screenY - height/2, width, height);
             }
             
+
+            // HUD
+            g2.setColor(Color.GREEN);
+            g2.setFont(new Font("Monospaced", Font.BOLD, 20));
+
+            if (model.timer != null) {
+
+                String formattedTime = String.format("%.1f", model.timer.seconds);
+
+                g2.drawString("TIME: " + formattedTime + "s", 20, 50);
+            }
+
+
+            g2.drawString("TOKENS: " + model.player.getInventory().getList().size() + "/3", 20, 80);
+
+            if (model.player.getCurrentRoom() != null) {
+                g2.drawString("LOC: " + model.player.getCurrentRoom().getName(), 20, 110);
+            }  
+            
+            String seed = model.player.getCurrentRoom().getMapSeed();
+                g2.drawString(seed != null ? seed : "SEED: ???", 20, 135);
+            
+
             g2.setColor(Color.GREEN);
             g2.drawString("MAP ITEMS: " + model.countItems(), 20, 20);
         }
@@ -337,16 +342,16 @@ public class GameView {
 
                 if (tile.getB()) {
                     if (tile.getC() == '#') {
-                        // Get Room ID
                         int rId = model.player.getCurrentRoom().getId();
-                        // Use Enum to get specific color
                         addDot(rayX, rayY, distance, RoomTheme.getColor(rId));
                     } 
-                    else if ("NSEW".indexOf(tile.getC()) != -1) {
-                        addDot(rayX, rayY, distance, Color.DARK_GRAY); // Closed = Void
+                    // LOCKED DOORS (i, o) -> DARK GRAY
+                    else if ("io".indexOf(tile.getC()) != -1) {
+                        addDot(rayX, rayY, distance, Color.DARK_GRAY); 
                     }
-                    else if ("nsew".indexOf(tile.getC()) != -1) {
-                        addDot(rayX, rayY, distance, new Color(138, 43, 226)); // Open = Purple
+                    // OPEN PORTALS (I, O) -> PURPLE
+                    else if ("IO".indexOf(tile.getC()) != -1) {
+                        addDot(rayX, rayY, distance, new Color(138, 43, 226)); 
                     }
                     return; 
                 } 
@@ -383,22 +388,27 @@ public class GameView {
                 case '1': case '2': case '3': case '4': case '5':
                 case '6': case '7': case '8': case '9':
                 case '.': 
-                case 'A': 
                     answer.setB(false);
                     answer.setC(cha);
                     break;
                 
-                case '#': 
+                case '#':  // wall
                      answer.setB(true);
                      answer.setC('#');
                      break;
 
-                // Portals (Visual Walls)
-                case 'n': case 's': case 'e': case 'w': 
-                case 'N': case 'S': case 'E': case 'W':
+                // Locked Doors (Solid)
+                case 'i': case 'o':
                     answer.setB(true); 
                     answer.setC(cha);
                     break;
+
+                // Open Portals (Solid)
+                case 'I': case 'O':
+                    answer.setB(true); 
+                    answer.setC(cha);
+                    break;
+                    
                     
                 default:
                     answer.setB(true);
