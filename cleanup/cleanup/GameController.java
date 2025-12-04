@@ -44,25 +44,20 @@ public class GameController {
         
 
         ActionListener actionLoadGame = e -> {
-
-            // SoundManager.triggerSfx(6);  /// this must be kept at all costs
-
             String filename = StartScreen.showLoadDialog(ui.frame);
 
-
             if (filename != null) {
-                // 1. Initialize the base world first so objects exist
+                // 1. Initialize base logic
                 model.startGame(); 
                 
-                // 2. Load the save data on top of it
+                // 2. Overwrite with Save Data
                 loadGame(model, filename); 
                 
-                // 3. Update the visual map based on the loaded room ID
-                int currentRoomId = model.player.getCurrentRoom().getId();
-                if (currentRoomId < all_maps.size()) {
-                    model.setMap(all_maps.get(currentRoomId));
-                }
+                // 3. REFRESH UI (The missing piece for the sidebar)
+                ui.inventoryPanel.updateInventory(model);
+                ui.inventoryPanel.updateDropdown(model, ui.itemDropdown);
 
+                // 4. Resume Game
                 isPaused = false;
                 ui.cardLayout.show(ui.mainContainer, "GAME");
                 ui.gamePanel.requestFocusInWindow();
@@ -362,49 +357,70 @@ public static void saveGame(GameModel model, String filename) {
 }
 
 public static void loadGame(GameModel model, String filename) {
-    try {
-        String content = new String(Files.readAllBytes(Paths.get(filename)));
-        
-        // 1. Load Player
-        String playerJson = JsonParser.getObjectContent(content, "player"); 
-        model.player.fromJson(playerJson);
-        
-        int savedRoomId = model.player.getSavedRoomId(playerJson);
-        
-        // Iterate over rooms to update them
-        String roomsArray = JsonParser.getArrayContent(content, "rooms");
-        if (!roomsArray.isEmpty()) {
-            String[] roomStrings = roomsArray.split("\\}, \\s*\\{");
-            for (String rStr : roomStrings) {
-                String cleanStr = rStr.trim();
-                if (!cleanStr.startsWith("{")) cleanStr = "{" + cleanStr;
-                if (!cleanStr.endsWith("}")) cleanStr = cleanStr + "}";
-                
-                int rId = Integer.parseInt(JsonParser.getValue(cleanStr, "id"));
-                
-                Room r = model.getRooms().get(String.valueOf(rId));
-                if (r != null) {
-                    r.fromJson(cleanStr); 
+        try {
+            String content = new String(Files.readAllBytes(Paths.get(filename)));
+            
+            // 1. Load Player (This was working)
+            String playerJson = JsonParser.getObjectContent(content, "player"); 
+            model.player.fromJson(playerJson);
+            
+            int savedRoomId = model.player.getSavedRoomId(playerJson);
+            
+            // 2. Load Rooms (This was failing)
+            String roomsArrayStr = JsonParser.getArrayContent(content, "rooms");
+            
+            if (!roomsArrayStr.isEmpty()) {
+                List<String> roomBlocks = new ArrayList<>();
+                int braceCount = 0;
+                StringBuilder currentBlock = new StringBuilder();
+                boolean inString = false;
+
+                for (int i = 0; i < roomsArrayStr.length(); i++) {
+                    char c = roomsArrayStr.charAt(i);
+                    if (c == '"') inString = !inString;
+                    
+                    if (!inString) {
+                        if (c == '{') {
+                            if (braceCount == 0) currentBlock = new StringBuilder();
+                            braceCount++;
+                        } else if (c == '}') {
+                            braceCount--;
+                            if (braceCount == 0) {
+                                currentBlock.append(c);
+                                roomBlocks.add(currentBlock.toString());
+                                currentBlock = new StringBuilder();
+                                continue;
+                            }
+                        }
+                    }
+                    if (braceCount > 0) currentBlock.append(c);
+                }
+
+                // Apply the data
+                for (String rStr : roomBlocks) {
+                    int rId = Integer.parseInt(JsonParser.getValue(rStr, "id"));
+                    Room r = model.getRooms().get(String.valueOf(rId));
+                    if (r != null) {
+                        r.fromJson(rStr); // This restores the map state, seed, and door locks
+                    }
                 }
             }
-        }
 
-        // Link player to room
-        for(Room r : model.getRooms().values()) {
-            if(r.getId() == savedRoomId) {
-                model.player.setCurrentRoom(r);
-                // CRITICAL FIX: Sync the Model's map pointer with the Room's new map
-                model.setMap(r.getMap()); 
-                break;
+            // 3. Link player to room and Update Model Pointer
+            for(Room r : model.getRooms().values()) {
+                if(r.getId() == savedRoomId) {
+                    model.player.setCurrentRoom(r);
+                    model.setMap(r.getMap()); // Sync visual map
+                    break;
+                }
             }
-        }
 
-        System.out.println("Game Loaded Successfully from " + filename);
-        
-    } catch (IOException e) {
-        System.out.println("No save file found: " + filename);
+            System.out.println("Game Loaded Successfully from " + filename);
+            
+        } catch (IOException e) {
+            System.out.println("No save file found: " + filename);
+        }
     }
-}
 
 
 }
