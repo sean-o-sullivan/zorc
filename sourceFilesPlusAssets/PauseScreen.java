@@ -31,8 +31,6 @@ public class PauseScreen extends JPanel {
 
         btnSave = new JButton("Save Game");
         btnSave.addActionListener(e -> {
-            // Pass the text field value to the action listener context if needed, 
-            // or Controller can grab it. simplified here:
             saveAction.actionPerformed(e); 
         });
         gbc.gridy = 2;

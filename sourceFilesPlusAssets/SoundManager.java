@@ -20,8 +20,7 @@ public class SoundManager {
         playMenuMusic(); // Start immediately with Menu music
     }
 
-    // --- MUSIC SWITCHING METHODS ---
-
+    // Music switching methods
     public static void playMenuMusic() {
         changeMusic(MUSIC_MENU);
     }

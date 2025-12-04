@@ -293,7 +293,7 @@ public void startGame() {
             // Check essential manna (3 items)
             if (player.getInventory().getList().size() >= 3) {
                 
-                // PAY THE TOLL: Remove 3 items
+                // Remove 3 items
                 // We remove the first 3 items in the list
                 for(int i=0; i<3; i++) {
                     if (!player.getInventory().getList().isEmpty()) {
@@ -316,7 +316,6 @@ public void startGame() {
     }
 
 
-    // --- REWRITTEN PHYSICS & ROOM TRANSITION ---
     public void updatePhysics() {
         if (kLeft)  player.setAngle(player.getAngle() - 0.07);
         if (kRight) player.setAngle(player.getAngle() + 0.07); 
@@ -392,15 +391,6 @@ public void startGame() {
             SoundManager.triggerSfx(0); // Whoosh
             announceRoom();
 
-            // Win Condition (Room 6 is the last room index)
-            if (nextId == 6 && type.equals("O")) { 
-                // Wait, if we walk INTO room 6 via 'O' from room 5, that's fine.
-                // But usually you win by exiting the final room.
-                // Let's say reaching Room 6 is the "Final Level" and exiting it ends game.
-                // For now, let's keep it simple: If you enter Room 6, you win? 
-                // Or maybe Room 6 has an exit 'O' that leads to id 7 (which doesn't exist)?
-            }
-            // Better Win Condition:
             if (nextId >= rooms.size()) {
                 SoundManager.playVictoryMusic();
                 if (dialogArea != null) Typewriter.type(dialogArea, "VICTORY! You have escaped.");

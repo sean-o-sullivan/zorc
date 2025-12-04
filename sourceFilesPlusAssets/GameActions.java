@@ -56,7 +56,7 @@ public class GameActions {
         Item toGrab = null;
         int slotId = -1;
 
-        // FIX: Room inventory is a Map<Integer, Item>. Iterate values to find name.
+        // Room inventory is a Map<Integer, Item>. Iterate values to find name.
         Map<Integer, Item> roomItems = player.getCurrentRoom().getInventory().getMap();
         
         for (Map.Entry<Integer, Item> entry : roomItems.entrySet()) {
@@ -76,10 +76,6 @@ public class GameActions {
         
         // Remove from Room's Map using the slot ID
         player.getCurrentRoom().getInventory().remove(slotId);
-        
-        // Note: In the text-based version, this leaves a 'ghost' number on the map
-        // because we aren't updating the string array here, but it works for inventory logic.
-        
         System.out.printf("You grab %s in %s.\n", toGrab.getName(), player.getCurrentRoom().getDescription());
     }
 

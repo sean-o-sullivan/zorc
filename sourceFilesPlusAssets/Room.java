@@ -57,8 +57,8 @@ public class Room extends Inventor implements Jsonable {
     public void removeItemFromSlot(int slot) { inventory.remove(slot); }
     public Item getItemFromSlot(int slot) { return inventory.get(slot); }
     
-    // --- JSON SAVING/LOADING ---
-    
+    // JSON SAVING/LOADING 
+
     @Override
     public String toJson() {
         // 1. Save Inventory
@@ -84,7 +84,6 @@ public class Room extends Inventor implements Jsonable {
         }
         mapSb.append("]");
         
-        // REPLACE the return statement in toJson() with this:
         return String.format(
             "{\"id\": %d, \"name\": \"%s\", \"description\": \"%s\", \"inventory\": %s, \"map\": %s, \"seed\": \"%s\"}", 
             id, name, description, invSb.toString(), mapSb.toString(), mapSeed
@@ -124,7 +123,7 @@ public class Room extends Inventor implements Jsonable {
             while (m.find()) mapLines.add(m.group(1));
             this.mapLayout = mapLines.toArray(new String[0]);
         }
-        
-        // No longer loading "doors"
+
+        // we no longer loading doors here
     }
 }

@@ -46,7 +46,6 @@ public class InventoryPanel extends JPanel {
     public void updateInventory(GameModel model) {
         displayArea.setText(""); 
         
-        // FIX: Added .getList() to iterate correctly
         for (Item item : model.player.getInventory().getList()){
             displayArea.setFont(timesNewRomanFont);
             String text = item.getName() + ": " + item.getDescription();
@@ -57,7 +56,7 @@ public class InventoryPanel extends JPanel {
 
     public void updateDropdown(GameModel model, JComboBox<String> dropdown) {
         dropdown.removeAllItems();
-        // FIX: Added .getList() here too
+
         for (Item item : model.player.getInventory().getList()) {
             dropdown.addItem(item.getName());
         }

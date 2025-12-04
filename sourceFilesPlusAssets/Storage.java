@@ -24,7 +24,7 @@ public class Storage<T extends Jsonable> {
     
 
     public int getNextFreeId() { // this is for the room id management
-        for (int i = 1; i <= 99; i++) { // we will not hit 99, not here 
+        for (int i = 1; i <= 99; i++) { // we will not hit 99, not here, no 
             if (!map.containsKey(i)) return i;
         }
         return -1; // Full

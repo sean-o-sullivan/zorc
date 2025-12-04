@@ -64,10 +64,6 @@ public class GameController {
         ActionListener actionSaveGame = e -> {
             String filename = ui.pauseScreen.getSaveFileName();
             saveGame(model, filename); // Update your saveGame to take filename arg
-            // Optional: Auto resume after save?
-            // isPaused = false;
-            // ui.cardLayout.show(ui.mainContainer, "GAME");
-            // ui.gamePanel.requestFocusInWindow();
         };
 
         ActionListener actionResume = e -> {
@@ -88,7 +84,7 @@ public class GameController {
         // Pass the text area from View to Model for the Typewriter
         model.setDialogArea(ui.dialogPanel.getDisplayArea()); // You might need to make getDisplayArea public in GameDialogPanel
         // --------------------
-        // INSERT THIS NEW LINE HERE:
+        // 
         GameActions.setDialogArea(ui.dialogPanel.getDisplayArea());
 
 
@@ -97,11 +93,6 @@ public class GameController {
 
 
         // we could initialise some fancy threads here. 
-
-
-        // ===============================
-
-
 
         // Key Listeners
         ui.gamePanel.addKeyListener(new KeyAdapter() {
@@ -327,7 +318,7 @@ public static void saveGame(GameModel model, String filename) {
         // 2. Save Rooms
         sb.append("  \"rooms\": [\n");
         
-        // FIX: Iterate over Map values, not by index
+        // Iterate over Map values, not by index
         int count = 0;
         int totalRooms = model.getRooms().size();
         
@@ -432,9 +423,8 @@ public static void loadGame(GameModel model, String filename) {
         if (nextRoom != null) {
             model.player.setCurrentRoom(nextRoom);
             model.setMap(nextRoom.getMap());
-            SoundManager.triggerSfx(4); // Whoosh sound
+            SoundManager.triggerSfx(4); // Whoosh 
 
-            // --- HARDCODED COORDINATES FOR FINAL ROOM (Room 6) ---
             if (nextId == 6) {
                 model.player.setPx(35.0); 
                 model.player.setPy(18.0);
