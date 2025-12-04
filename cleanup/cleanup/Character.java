@@ -1,3 +1,5 @@
+import java.util.List;
+
 public class Character extends Inventor implements Jsonable {
     private String name;
     private Room currentRoom;
@@ -8,7 +10,6 @@ public class Character extends Inventor implements Jsonable {
         this.name = name;
         this.currentRoom = startingRoom;
     }
-
 
     public double getPx() {
         return px;
@@ -47,6 +48,7 @@ public class Character extends Inventor implements Jsonable {
     }
 
     public void move(String direction) {
+        // Legacy support mostly, physics loop handles real movement now
         Room nextRoom = currentRoom.getExit(direction);
         if (nextRoom != null) {
             currentRoom = nextRoom;
@@ -65,9 +67,13 @@ public class Character extends Inventor implements Jsonable {
         // 2. Build Inventory JSON Array
         StringBuilder invSb = new StringBuilder();
         invSb.append("[");
-        for (int i = 0; i < inventory.size(); i++) {
-            invSb.append(inventory.get(i).toJson());
-            if (i < inventory.size() - 1) invSb.append(", ");
+        
+        // FIX: Access the internal list via getList()
+        List<Item> items = inventory.getList();
+        
+        for (int i = 0; i < items.size(); i++) {
+            invSb.append(items.get(i).toJson());
+            if (i < items.size() - 1) invSb.append(", ");
         }
         invSb.append("]");
 
@@ -81,15 +87,21 @@ public class Character extends Inventor implements Jsonable {
     @Override
     public void fromJson(String json) {
         this.name = JsonParser.getValue(json, "name");
-        this.px = Double.parseDouble(JsonParser.getValue(json, "px"));
-        this.py = Double.parseDouble(JsonParser.getValue(json, "py"));
-        this.angle = Double.parseDouble(JsonParser.getValue(json, "angle"));
+        
+        String pxStr = JsonParser.getValue(json, "px");
+        String pyStr = JsonParser.getValue(json, "py");
+        String angleStr = JsonParser.getValue(json, "angle");
+        
+        if(!pxStr.isEmpty()) this.px = Double.parseDouble(pxStr);
+        if(!pyStr.isEmpty()) this.py = Double.parseDouble(pyStr);
+        if(!angleStr.isEmpty()) this.angle = Double.parseDouble(angleStr);
         
         // Note: Room linking happens in Controller via this ID
-        // We can store it temporarily or access it via a helper method in Controller
         
         // Load Inventory
-        this.getInventory().clear(); // Clear existing items first!
+        // FIX: Access the internal list to clear it
+        this.getInventory().getList().clear(); 
+        
         String invArray = JsonParser.getArrayContent(json, "inventory");
         
         if (!invArray.isEmpty()) {
@@ -113,6 +125,4 @@ public class Character extends Inventor implements Jsonable {
         String idStr = JsonParser.getValue(json, "currentRoomId");
         return idStr.isEmpty() ? 0 : Integer.parseInt(idStr);
     }
-
-    
 }

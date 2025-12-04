@@ -1,245 +1,232 @@
-// for counting how long a player took for each level
-            // if (gameState==0){
-            //     start = System.nanoTime();
-            //     gameState=1;
-            // }
-            // duration = System.nanoTime() - start;
-
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import javax.swing.JTextArea; 
 
 public class GameModel {
 
     private Map<String, Room> rooms = new HashMap<>();
 
-    // Player starts null, initialized in startGame
     public Character player; 
-    public String[] currentRoomMap;
+    public String[] currentRoomMap; // This is just a pointer to the Room's map
     public int gameState = 0;
 
     public boolean kUp, kDown, kLeft, kRight, kScan, kWipe;
+    
+    // Typewriter target
+    private JTextArea dialogArea; 
+    
+    // Thread for time
+    public GameTimer timer;
 
     public Map<String, Room> getRooms() { return rooms; }
+    
+    public void setDialogArea(JTextArea area) { this.dialogArea = area; }
 
     public void startGame() {
-        // Load everything from the JSON source
+        // Initialize Sound System
+        SoundManager.init();
+        
+        // Load JSON
         try {
             loadWorldFromJson("game-info.json");
+            
+            // Randomly assign rooms to N/S/E/W doors
+            randomizeDoors(); 
+            pruneInvalidDoors();
+
+            // Start Timer Thread
+            timer = new GameTimer(); 
+            timer.start();
+            
+            // Intro Text
+            if (dialogArea != null) {
+                Typewriter.type(dialogArea, "System Booting ..... \n\nINITIALIZING LIDAR... [OK] \n LOADING MAP DATA... ░░░░░░ 20%\n ... ▓▓▓▒▒░ 45%\nERROR: SECTOR 7 CORRUPTED >> 0xFA82 // ｱｲｳｴｵ\nRETRYING... ⣾⣽⣻⢿⡿⣟\nCONNECTION ESTABLISHED.\n\nLidar guidance system Online.\n\n Hello there! \n I am your lidar guidance system.... \n\nor L for short!\n\n We seem to have woken up in a liminal space... \n\n ... ... ...\n\n The space does have shape! \n\n We can map it! \n\s\s\s >Press SPACE to fire dots. \n\n And it seems that we can look around... \n\s\s\s Press ARROW_KEYS to navigate\n\n I sense there are in a series of interconnected rooms! \n\n Find 3 tokens to open portals. [ Ξ ] ... The portals appear dark on our lidar\n\n If the strain gets too large we can forget the dots \n\s\s\s >Press Q to forget dots\n\n And remember - \n\t move quickly!");
+            
+                try { // this is to ensure that the order i want is maintained. In exchange we get an imperceptible delay in the ui. 
+                        Thread.sleep(1);   
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }     
+
+                Typewriter.type(dialogArea, " \n\n\n\n\n\n\n"); // clear the screen a little, every usage of the type method creates a new thread, but since typewriter is one object there is only one lock
+
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
-            // Fallback if load fails
-            Room fallback = new Room("Emergency Bunker");
-            fallback.setId(0);
-            rooms.put("fallback", fallback);
-            player = new Character("Survivor", fallback);
-        }
-    }
-
-private void loadWorldFromJson(String filename) throws IOException {
-    String content = new String(Files.readAllBytes(Paths.get(filename)));
-    
-    // 1. Parse Rooms Array
-    String roomsArrayStr = JsonParser.getArrayContent(content, "ROOMS");
-    
-    if (roomsArrayStr.isEmpty()) {
-        System.err.println("ERROR: Could not find ROOMS array in JSON");
-        return;
-    }
-    
-    // Better splitting: handle nested objects and arrays properly
-    List<String> roomBlocks = new ArrayList<>();
-    int braceCount = 0;
-    int bracketCount = 0;
-    boolean inString = false;
-    StringBuilder currentBlock = new StringBuilder();
-    
-    for (int i = 0; i < roomsArrayStr.length(); i++) {
-        char c = roomsArrayStr.charAt(i);
-        
-        // Handle escape sequences
-        if (c == '\\' && i + 1 < roomsArrayStr.length()) {
-            currentBlock.append(c);
-            i++;
-            currentBlock.append(roomsArrayStr.charAt(i));
-            continue;
-        }
-        
-        // Track if we're inside a string
-        if (c == '"') {
-            inString = !inString;
-        }
-        
-        // Only count braces/brackets outside strings
-        if (!inString) {
-            if (c == '{') {
-                if (braceCount == 0) {
-                    // Starting a new top-level object
-                    currentBlock = new StringBuilder();
-                }
-                braceCount++;
-            } else if (c == '}') {
-                braceCount--;
-                if (braceCount == 0 && currentBlock.length() > 0) {
-                    // Completed a top-level object
-                    currentBlock.append(c);
-                    roomBlocks.add(currentBlock.toString().trim());
-                    currentBlock = new StringBuilder();
-                    continue;
-                }
-            } else if (c == '[') {
-                bracketCount++;
-            } else if (c == ']') {
-                bracketCount--;
-            }
-        }
-        
-        if (braceCount > 0) {
-            currentBlock.append(c);
         }
     }
     
-    System.out.println("DEBUG: Found " + roomBlocks.size() + " room blocks");
+    // Naive implementation: Randomly links doors 
+    private void randomizeDoors() {
+        List<Integer> ids = new ArrayList<>();
+        for(String s : rooms.keySet()) ids.add(Integer.parseInt(s));
+        
+        for(Room r : rooms.values()) {
+            Collections.shuffle(ids);
+            // Assign N, S, E, W to random IDs
+            r.doorTargets.put("N", ids.get(0));
+            r.doorTargets.put("S", ids.get(1));
+            r.doorTargets.put("E", ids.get(2));
+            r.doorTargets.put("W", ids.get(3));
+            
+            // Also map the lowercase versions so when we unlock them, the link remains
+            r.doorTargets.put("n", ids.get(0));
+            r.doorTargets.put("s", ids.get(1));
+            r.doorTargets.put("e", ids.get(2));
+            r.doorTargets.put("w", ids.get(3));
+        }
+    }
 
-    for (int idx = 0; idx < roomBlocks.size(); idx++) {
-        String cleanBlock = roomBlocks.get(idx);
+    private void loadWorldFromJson(String filename) throws IOException {
+        String content = new String(Files.readAllBytes(Paths.get(filename)));
         
-        System.out.println("DEBUG: Processing room block " + idx);
+        // 1. Parse ROOMS Array
+        String roomsArrayStr = JsonParser.getArrayContent(content, "ROOMS");
         
-        // Extract Room Details with safety checks
-        String idStr = JsonParser.getValue(cleanBlock, "id");
-        if (idStr.isEmpty()) {
-            System.err.println("ERROR: Could not extract 'id' from room block " + idx);
-            System.err.println("Block preview: " + cleanBlock.substring(0, Math.min(200, cleanBlock.length())));
-            continue;
+        if (roomsArrayStr.isEmpty()) {
+            System.err.println("ERROR: Could not find ROOMS array in JSON");
+            return;
         }
         
-        int id = Integer.parseInt(idStr);
-        String name = JsonParser.getValue(cleanBlock, "name");
-        String desc = JsonParser.getValue(cleanBlock, "description");
+        List<String> roomBlocks = new ArrayList<>();
+        int braceCount = 0;
+        int bracketCount = 0;
+        boolean inString = false;
+        StringBuilder currentBlock = new StringBuilder();
         
-        System.out.println("DEBUG: Room " + id + ": " + name);
-
-        // Create Room
-        Room newRoom = new Room(desc);
-        newRoom.setId(id);
-        rooms.put(String.valueOf(id), newRoom);
-        
-        // Extract and store the map for this room
-        String mapArrayStr = JsonParser.getArrayContent(cleanBlock, "map");
-        if (!mapArrayStr.isEmpty()) {
-            // Split map lines - they're quoted strings separated by commas
-            List<String> mapLines = new ArrayList<>();
-            Pattern mapLinePattern = Pattern.compile("\"([^\"]+)\"");
-            java.util.regex.Matcher mapMatcher = mapLinePattern.matcher(mapArrayStr);
+        for (int i = 0; i < roomsArrayStr.length(); i++) {
+            char c = roomsArrayStr.charAt(i);
             
-            while (mapMatcher.find()) {
-                mapLines.add(mapMatcher.group(1));
+            if (c == '\\' && i + 1 < roomsArrayStr.length()) {
+                currentBlock.append(c);
+                i++;
+                currentBlock.append(roomsArrayStr.charAt(i));
+                continue;
             }
             
-            if (!mapLines.isEmpty()) {
-                String[] mapArray = mapLines.toArray(new String[0]);
-                // Store the map somehow - we need to associate it with the room
-                // For now, if this is room 0, set it as current map
-                if (id == 0) {
-                    currentRoomMap = mapArray;
-                    System.out.println("DEBUG: Loaded map for room 0, size: " + mapArray.length + " x " + mapArray[0].length());
+            if (c == '"') {
+                inString = !inString;
+            }
+            
+            if (!inString) {
+                if (c == '{') {
+                    if (braceCount == 0) {
+                        currentBlock = new StringBuilder();
+                    }
+                    braceCount++;
+                } else if (c == '}') {
+                    braceCount--;
+                    if (braceCount == 0 && currentBlock.length() > 0) {
+                        currentBlock.append(c);
+                        roomBlocks.add(currentBlock.toString().trim());
+                        currentBlock = new StringBuilder();
+                        continue;
+                    }
+                } else if (c == '[') {
+                    bracketCount++;
+                } else if (c == ']') {
+                    bracketCount--;
                 }
             }
-        } 
-        // Extract Items for this Room
-        String itemsArrayStr = JsonParser.getArrayContent(cleanBlock, "items");
-        if (!itemsArrayStr.isEmpty()) {
-            List<String> itemBlocks = new ArrayList<>();
-            int iBraceCount = 0;
-            boolean iInString = false;
-            StringBuilder iBlock = new StringBuilder();
             
-            for (int i = 0; i < itemsArrayStr.length(); i++) {
-                char c = itemsArrayStr.charAt(i);
+            if (braceCount > 0) {
+                currentBlock.append(c);
+            }
+        }
+        
+        // 2. Process each Room Block
+        for (String cleanBlock : roomBlocks) {
+            String idStr = JsonParser.getValue(cleanBlock, "id");
+            if (idStr.isEmpty()) continue;
+            
+            int id = Integer.parseInt(idStr);
+            String desc = JsonParser.getValue(cleanBlock, "description");
+            
+            Room newRoom = new Room(desc);
+            newRoom.setId(id);
+            rooms.put(String.valueOf(id), newRoom);
+            
+            String mapArrayStr = JsonParser.getArrayContent(cleanBlock, "map");
+            if (!mapArrayStr.isEmpty()) {
+                List<String> mapLines = new ArrayList<>();
+                java.util.regex.Matcher mapMatcher = Pattern.compile("\"([^\"]+)\"").matcher(mapArrayStr);
+                while (mapMatcher.find()) {
+                    mapLines.add(mapMatcher.group(1));
+                }
+                if (!mapLines.isEmpty()) {
+                    newRoom.setMap(mapLines.toArray(new String[0]));
+                }
+            } 
+
+            String itemsArrayStr = JsonParser.getArrayContent(cleanBlock, "items");
+            if (!itemsArrayStr.isEmpty()) {
+                List<String> itemBlocks = new ArrayList<>();
+                int iBraceCount = 0;
+                boolean iInString = false;
+                StringBuilder iBlock = new StringBuilder();
                 
-                if (c == '\\' && i + 1 < itemsArrayStr.length()) {
+                for (int i = 0; i < itemsArrayStr.length(); i++) {
+                    char c = itemsArrayStr.charAt(i);
+                    if (c == '\\' && i + 1 < itemsArrayStr.length()) {
+                        iBlock.append(c).append(itemsArrayStr.charAt(++i));
+                        continue;
+                    }
+                    if (c == '"') iInString = !iInString;
+                    if (!iInString) {
+                        if (c == '{') {
+                            if (iBraceCount == 0) iBlock = new StringBuilder();
+                            iBraceCount++;
+                        } else if (c == '}') iBraceCount--;
+                    }
                     iBlock.append(c);
-                    i++;
-                    iBlock.append(itemsArrayStr.charAt(i));
-                    continue;
-                }
-                
-                if (c == '"') iInString = !iInString;
-                
-                if (!iInString) {
-                    if (c == '{') {
-                        if (iBraceCount == 0) iBlock = new StringBuilder();
-                        iBraceCount++;
-                    } else if (c == '}') {
-                        iBraceCount--;
+                    if (!iInString && iBraceCount == 0 && iBlock.length() > 0) {
+                        String block = iBlock.toString().trim();
+                        if (block.startsWith("{") && block.endsWith("}")) itemBlocks.add(block);
+                        iBlock = new StringBuilder();
                     }
                 }
                 
-                iBlock.append(c);
-                
-                if (!iInString && iBraceCount == 0 && iBlock.length() > 0) {
-                    String block = iBlock.toString().trim();
-                    if (block.startsWith("{") && block.endsWith("}")) {
-                        itemBlocks.add(block);
-                    }
-                    iBlock = new StringBuilder();
+                for (String itemBlock : itemBlocks) {
+                    String iName = JsonParser.getValue(itemBlock, "name");
+                    String iDesc = JsonParser.getValue(itemBlock, "desc");
+                    Item newItem = new Item(iName, iDesc);
+                    newRoom.addItemToRoom(newItem);
                 }
             }
+        }
+        
+        // 3. Create Player and Link Pointers
+        Room startRoom = rooms.get("0");
+        if (startRoom != null) {
+            player = new Character("Character", startRoom);
             
-            for (String itemBlock : itemBlocks) {
-                String iName = JsonParser.getValue(itemBlock, "name");
-                String iDesc = JsonParser.getValue(itemBlock, "desc");
-                Item newItem = new Item(iName, iDesc);
-                newRoom.addItem(newItem);
+            String playerJson = JsonParser.getObjectContent(content, "PLAYER");
+            if (!playerJson.isEmpty()) {
+                String xStr = JsonParser.getValue(playerJson, "x");
+                String yStr = JsonParser.getValue(playerJson, "y");
+                String angleStr = JsonParser.getValue(playerJson, "angle");
+                
+                if (!xStr.isEmpty()) player.setPx(Double.parseDouble(xStr));
+                if (!yStr.isEmpty()) player.setPy(Double.parseDouble(yStr));
+                if (!angleStr.isEmpty()) player.setAngle(Double.parseDouble(angleStr));
             }
-        }
-    }
-    
-    System.out.println("DEBUG: Loaded " + rooms.size() + " rooms total");
-    
-    // Create the player in the starting room (room 0)
-    Room startRoom = rooms.get("0");
-    if (startRoom != null) {
-        player = new Character("Character", startRoom);
-        
-        // Set initial position from PLAYER section in JSON
-        String playerJson = JsonParser.getObjectContent(content, "PLAYER");
-        if (!playerJson.isEmpty()) {
-            String xStr = JsonParser.getValue(playerJson, "x");
-            String yStr = JsonParser.getValue(playerJson, "y");
-            String angleStr = JsonParser.getValue(playerJson, "angle");
             
-            if (!xStr.isEmpty()) player.setPx(Double.parseDouble(xStr));
-            if (!yStr.isEmpty()) player.setPy(Double.parseDouble(yStr));
-            if (!angleStr.isEmpty()) player.setAngle(Double.parseDouble(angleStr));
+            this.currentRoomMap = startRoom.getMap();
+            System.out.println("DEBUG: Player created at (" + player.getPx() + ", " + player.getPy() + ")");
+        } else {
+            System.err.println("ERROR: Could not find starting room (id=0)");
         }
-        
-        System.out.println("DEBUG: Player created at (" + player.getPx() + ", " + player.getPy() + ")");
-    } else {
-        System.err.println("ERROR: Could not find starting room (id=0)");
     }
-}
 
-
-// for counting how long a player took for each level
-            // if (gameState==0){
-            //     start = System.nanoTime();
-            //     gameState=1;
-            // }
-            // duration = System.nanoTime() - start;
-
-
-
-    
-        
     private void modifyMap(int x, int y, char newChar) {
         char[] row = currentRoomMap[y].toCharArray();
         row[x] = newChar;
@@ -248,110 +235,192 @@ private void loadWorldFromJson(String filename) throws IOException {
 
     public void setMap(String[] map) {
         this.currentRoomMap = map;
+        if(player != null && player.getCurrentRoom() != null) {
+            player.getCurrentRoom().setMap(map);
+        }
     }
 
-    public String[] getCurrentMap() {
-        return currentRoomMap;
-    }
+    public String[] getCurrentMap() { return currentRoomMap; }
 
     public int countItems() {
         int count = 0;
+        if(currentRoomMap == null) return 0;
         for(String s : currentRoomMap) {
             for(char c : s.toCharArray()) if((c>='1'&&c<='9')) count++;
         }
         return count;
     }
 
-
+    // --- REWRITTEN INTERACTION LOGIC ---
     public void interactWithItem(boolean pickup, int targetIndex) {
-        int checkX = (int)(player.getPx() + Math.cos(player.getAngle()) * 1.0);
-        int checkY = (int)(player.getPy() + Math.sin(player.getAngle()) * 1.0);
+        int cx = (int)(player.getPx() + Math.cos(player.getAngle()));
+        int cy = (int)(player.getPy() + Math.sin(player.getAngle()));
 
-        if (checkY < 0 || checkY >= currentRoomMap.length) return;
-        if (checkX < 0 || checkX >= currentRoomMap[0].length()) return;
+        if (cy < 0 || cy >= currentRoomMap.length) return;
+        if (cx < 0 || cx >= currentRoomMap[0].length()) return;
 
-        char targetChar = currentRoomMap[checkY].charAt(checkX);
-        boolean isItem = (targetChar >= '1' && targetChar <= '9');
-        boolean isEmpty = (targetChar == '.');
+        char targetChar = currentRoomMap[cy].charAt(cx);
+        Room r = player.getCurrentRoom();
 
-        ArrayList<Item> currentRoomInventory = player.getCurrentRoom().getInventory();
-        ArrayList<Item> playerInventory = player.getInventory();
-
-        if (pickup && isItem) {
-            System.out.println("Picked up item: " + targetChar);
+        // FIX: Explicitly call java.lang.Character to avoid name collision
+        if (pickup && java.lang.Character.isDigit(targetChar) && targetChar != '0') {
+            int slot = targetChar - '0';
+            Item item = r.getItemFromSlot(slot);
             
-            // we need to query the current room, find what item has index position 2 in its inventory and then remove it from its inventory and add it to the players.
-            // we need to get the current room we are in based on its name.   // how are we keeping track of the current room
-            // can we get what room the player is currently in? yes.
-
-            for (Item item : currentRoomInventory){   // to validate that a room actually has a populated inventory 
-                System.out.printf(" %s",item.toString());
+            if (item != null) {
+                player.addItem(item);
+                r.removeItemFromSlot(slot);
+                modifyMap(cx, cy, '.'); // Remove from map
+                
+                SoundManager.triggerSfx(1); // Pickup Sound
+                if (dialogArea != null) Typewriter.type(dialogArea, "Picked up: " + item.getName());
             }
-            System.out.println();
-            
-            
-            if (targetIndex >= 0 && targetIndex < currentRoomInventory.size()) {
-
-                System.out.println("Item found at index " + targetIndex + ": " + currentRoomInventory.get(targetIndex));
-                player.addItem(currentRoomInventory.get(targetIndex));
-                player.getCurrentRoom().remItem(currentRoomInventory.get(targetIndex));
-                modifyMap(checkX, checkY, '.');
-
-            } else {
-                System.out.println("Index " + targetIndex + " is out of bounds.");
-            }
+        } 
         
-
-        }  else if (!pickup && isEmpty) {
-
-            // if I want to put down an item I need a way of specifying what item name I want to put down. So I need to select the item I want to drop from my inventory, and that passes its name. 
-            System.out.println("Dropped item");
-
-            player.getCurrentRoom().addItem(playerInventory.get(targetIndex));
-            player.remItem(playerInventory.get(targetIndex));
-
-            char dropSpot = (char) ((currentRoomInventory.size() - 1) + '0');  // this converts the int to a Character and then to a char
-
-            modifyMap(checkX, checkY, dropSpot);
-
+        // 2. DROP ITEM (.)
+        else if (!pickup && targetChar == '.') {
+            if(targetIndex < 0 || targetIndex >= player.getInventory().getList().size()) return;
+            
+            Item toDrop = player.getInventory().getList().get(targetIndex);
+            int newSlot = r.getNextFreeSlot();
+            
+            if(newSlot != -1) {
+                r.addItemToSlot(newSlot, toDrop);
+                player.remItem(toDrop);
+                
+                char newChar = (char)(newSlot + '0');
+                modifyMap(cx, cy, newChar);
+                
+                SoundManager.triggerSfx(2); // Drop Sound
+                if (dialogArea != null) Typewriter.type(dialogArea, "Dropped: " + toDrop.getName());
+            } else {
+                if (dialogArea != null) Typewriter.type(dialogArea, "No space here!");
+            }
+        }
+        
+        // 3. UNLOCK DOOR (N, S, E, W)
+        else if (pickup && "NSEW".indexOf(targetChar) != -1) {
+            // Check essential manna (3 items)
+            if (player.getInventory().getList().size() >= 3) {
+                // Change N -> n
+                // FIX: Explicitly call java.lang.Character
+                char openChar = java.lang.Character.toLowerCase(targetChar);
+                modifyMap(cx, cy, openChar);
+                
+                SoundManager.triggerSfx(3); // Unlock Sound
+                if (dialogArea != null) Typewriter.type(dialogArea, "Gate Unlocked! The path is clear.");
+                
+            } else {
+                SoundManager.triggerSfx(2); // Error/Drop sound used as deny
+                if (dialogArea != null) Typewriter.type(dialogArea, "Locked. You need 3 tokens to open this.");
+            }
         }
     }
 
-       private boolean isValidMove(double x, double y) {
+    private boolean isValidMove(double x, double y) {
         int ix = (int)x;
         int iy = (int)y;
-
         if (iy < 0 || iy >= currentRoomMap.length) return false;
         if (ix < 0 || ix >= currentRoomMap[0].length()) return false;
-
         char tile = currentRoomMap[iy].charAt(ix);
         return tile != '#';
     }
 
+    // --- REWRITTEN PHYSICS & ROOM TRANSITION ---
     public void updatePhysics() {
         if (kLeft)  player.setAngle(player.getAngle() - 0.07);
         if (kRight) player.setAngle(player.getAngle() + 0.07); 
 
         double dx = Math.cos(player.getAngle()) * 0.1;
         double dy = Math.sin(player.getAngle()) * 0.1;
+        
+        double nextX = player.getPx();
+        double nextY = player.getPy();
 
         if (kUp) { 
-            double nextX = player.getPx() + dx;
-            double nextY = player.getPy() + dy;
-            if (isValidMove(nextX, nextY)) {
-                player.setPx(nextX);
-                player.setPy(nextY);
+            nextX += dx; nextY += dy;
+        } else if (kDown) {
+            nextX -= dx; nextY -= dy;
+        }
+
+        if (kUp || kDown) {
+            int ix = (int)nextX;
+            int iy = (int)nextY;
+
+            // Boundary Check
+            if (iy >= 0 && iy < currentRoomMap.length && ix >= 0 && ix < currentRoomMap[0].length()) {
+                char tile = currentRoomMap[iy].charAt(ix);
+
+                // Standard Collision
+                if (tile != '#' && "NSEW".indexOf(tile) == -1) {
+                    
+                    // Check for Portal Entry (Lowercase n, s, e, w)
+                    if ("nsew".indexOf(tile) != -1) {
+                        transitionRoom(String.valueOf(tile));
+                    } else {
+                        // Just walking
+                        player.setPx(nextX);
+                        player.setPy(nextY);
+                    }
+                }
             }
         }
-        
-        if (kDown) { 
-            double nextX = player.getPx() - dx;
-            double nextY = player.getPy() - dy;
-            if (isValidMove(nextX, nextY)) {
-                player.setPx(nextX);
-                player.setPy(nextY);
+    }
+    
+    // Moves player to the next room
+    private void transitionRoom(String dir) {
+        Room current = player.getCurrentRoom();
+        if(current.doorTargets.containsKey(dir)) {
+            int nextId = current.doorTargets.get(dir);
+            Room nextRoom = rooms.get(String.valueOf(nextId));
+            
+            if(nextRoom != null) {
+                player.setCurrentRoom(nextRoom);
+                // CRITICAL: Update the map pointer to the new room's map
+                this.currentRoomMap = nextRoom.getMap();
+                
+                // Reset Position to center to avoid getting stuck in wall/door
+                player.setPx(5.0); 
+                player.setPy(5.0);
+                
+                SoundManager.triggerSfx(4); // Whoosh
+                if (dialogArea != null) Typewriter.type(dialogArea, "Entered: " + nextRoom.getDescription());
+                
+                // Win Condition Check (Example: Room 6 is exit)
+                if(nextId == 6) {
+                    SoundManager.playVictoryMusic();
+                    if (dialogArea != null) Typewriter.type(dialogArea, "VICTORY! You have escaped.");
+                    gameState = 1; // End state
+                }
             }
-        } 
+        }
     }
 
+    private void pruneInvalidDoors() {
+        for (Room r : rooms.values()) {
+            String[] map = r.getMap();
+            if (map == null) continue;
+            
+            for (int y = 0; y < map.length; y++) {
+                char[] row = map[y].toCharArray();
+                boolean modified = false;
+                
+                for (int x = 0; x < row.length; x++) {
+                    char c = row[x];
+                    // If it's a door char, but no connection exists, wall it off
+                    if ("NSEW".indexOf(c) != -1) {
+                        if (!r.doorTargets.containsKey(String.valueOf(c))) {
+                            row[x] = '#';
+                            modified = true;
+                        }
+                    }
+                }
+                
+                if (modified) {
+                    map[y] = new String(row);
+                }
+            }
+            r.setMap(map);
+        }
+    }
 }

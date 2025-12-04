@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class GameActions {
 
@@ -9,19 +11,22 @@ public class GameActions {
     }
 
     public static void search(Inventor target) { 
-        // using simple name check as per your snippet
         String type = target.getClass().getSimpleName(); 
         if (type.equals("Room")) System.out.println("You search the room…");
         else if (type.equals("Character")) System.out.println("You rummage in your bag…");
 
-        ArrayList<Item> contents = target.getInventory();
-        if (contents.isEmpty()) {
+        // FIX: Combine items from both List (Player) and Map (Room) into one list for display
+        Storage<Item> storage = target.getInventory();
+        List<Item> allItems = new ArrayList<>(storage.getList());
+        allItems.addAll(storage.getMap().values());
+
+        if (allItems.isEmpty()) {
             System.out.println("  You find only a speck of dust!");
             return;
         }
 
         System.out.println("  You find:");
-        for (Item item : contents) {
+        for (Item item : allItems) {
             System.out.println("    " + item.getName() + " — " + item.getDescription());
         }
     }
@@ -34,10 +39,15 @@ public class GameActions {
 
         String itemName = command.getSecondWord();
         Item toGrab = null;
+        int slotId = -1;
 
-        for (Item item : player.getCurrentRoom().getInventory()) {
-            if (item.getName().equalsIgnoreCase(itemName)) {
-                toGrab = item;
+        // FIX: Room inventory is a Map<Integer, Item>. Iterate values to find name.
+        Map<Integer, Item> roomItems = player.getCurrentRoom().getInventory().getMap();
+        
+        for (Map.Entry<Integer, Item> entry : roomItems.entrySet()) {
+            if (entry.getValue().getName().equalsIgnoreCase(itemName)) {
+                toGrab = entry.getValue();
+                slotId = entry.getKey(); // We need the ID to remove it properly
                 break;
             }
         }
@@ -47,8 +57,14 @@ public class GameActions {
             return;
         }
 
-        player.addItem(toGrab);
-        player.getCurrentRoom().remItem(toGrab);
+        player.addItem(toGrab); // Adds to Player's List
+        
+        // Remove from Room's Map using the slot ID
+        player.getCurrentRoom().getInventory().remove(slotId);
+        
+        // Note: In the text-based version, this leaves a 'ghost' number on the map
+        // because we aren't updating the string array here, but it works for inventory logic.
+        
         System.out.printf("You grab %s in %s.\n", toGrab.getName(), player.getCurrentRoom().getDescription());
     }
 
@@ -62,7 +78,8 @@ public class GameActions {
         String itemName = command.getSecondWord();
         Item toStash = null;
 
-        for (Item item : player.getInventory()) {
+        // FIX: Player inventory is a List.
+        for (Item item : player.getInventory().getList()) {
             if (item.getName().equalsIgnoreCase(itemName)) {
                 toStash = item;
                 break;
@@ -74,8 +91,12 @@ public class GameActions {
             return;
         }
 
-        player.getCurrentRoom().addItem(toStash);
+        // Add to Room (will assign a new ID 1-9)
+        player.getCurrentRoom().addItemToRoom(toStash);
+        
+        // Remove from Player
         player.remItem(toStash);
+        
         System.out.printf("You stash %s in %s.\n", toStash.getName(), player.getCurrentRoom().getDescription());
     }
 
@@ -87,14 +108,21 @@ public class GameActions {
         }
 
         String direction = command.getSecondWord();
+        // Uses the legacy exits map for text commands
         Room nextRoom = player.getCurrentRoom().getExit(direction);
 
         if (nextRoom == null) {
-            System.out.println("There is no door!");
+            // Fallback: Check the new doorTargets map if the legacy one is empty
+            if(player.getCurrentRoom().doorTargets.containsKey(direction)) {
+                // This requires access to the full room list to find the room object by ID
+                // For now, simpler text commands might fail if not using N/S/E/W specifically
+                System.out.println("The door is locked or does not exist.");
+            } else {
+                System.out.println("There is no door!");
+            }
         } else {
             player.setCurrentRoom(nextRoom);
             System.out.println(player.getCurrentRoom().getLongDescription());
         }
     }
-
 }

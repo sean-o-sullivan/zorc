@@ -131,8 +131,14 @@ public class GameController {
             ui.cardLayout.show(ui.mainContainer, "MENU");
         };
 
+
         // Initialize UI with actions
         ui = GameView.createGameUI(model, actionNewGame, actionLoadGame, actionSaveGame, actionResume, actionQuitToMenu);
+
+        // --- ADD THIS LINE ---
+        // Pass the text area from View to Model for the Typewriter
+        model.setDialogArea(ui.dialogPanel.getDisplayArea()); // You might need to make getDisplayArea public in GameDialogPanel
+        // --------------------
 
         // Listeners
         // ===============================
@@ -435,7 +441,6 @@ public static void loadGame(GameModel model, String filename) {
         System.out.println("No save file found: " + filename);
     }
 }
-
 
 }
 

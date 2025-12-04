@@ -14,7 +14,7 @@ public class GameView {
         
         public DisplayGame gamePanel;
         public GameDialogPanel dialogPanel;
-        public InventoryPanel inventoryPanel;  // NEW
+        public InventoryPanel inventoryPanel;
         public StartScreen startScreen;
         public PauseScreen pauseScreen;
         
@@ -23,57 +23,117 @@ public class GameView {
         public JComboBox<String> itemDropdown;
     }
 
-    public static UIContext createGameUI(GameModel model, 
+
+  public static UIContext createGameUI(GameModel model, 
                                          ActionListener newGame, 
                                          ActionListener loadGame,
                                          ActionListener saveGame,
                                          ActionListener resumeGame,
                                          ActionListener quitToMenu)
     {
-
         UIContext ctx = new UIContext();
         ctx.frame = new JFrame("MVC Zork Lidar");
         ctx.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
+        // --- STYLING: Window Frame & Background ---
+        ctx.frame.getContentPane().setBackground(Color.BLACK); 
+        // Note: Changing the actual Title Bar color is OS-dependent and usually requires 
+        // external libraries (like FlatLaf), but this handles the internal frame content.
+        
         ctx.cardLayout = new CardLayout();
         ctx.mainContainer = new JPanel(ctx.cardLayout);
+        ctx.mainContainer.setBackground(Color.BLACK);
 
         JPanel gameContainer = new JPanel(new BorderLayout());
+        gameContainer.setBackground(Color.BLACK);
         
         ctx.gamePanel = new DisplayGame(model);
         gameContainer.add(ctx.gamePanel, BorderLayout.CENTER);
 
-        // Left: Dialog Panel
+        // --- Left: Dialog Panel ---
         ctx.dialogPanel = new GameDialogPanel();
         ctx.dialogPanel.setPreferredSize(new Dimension(250, 0));
+        styleComponent(ctx.dialogPanel, true); // Style the container
         gameContainer.add(ctx.dialogPanel, BorderLayout.WEST);
 
-        // Right: Inventory Panel 
+        // --- Right: Inventory Panel ---
         ctx.inventoryPanel = new InventoryPanel(model);
-        ctx.inventoryPanel.setPreferredSize(new Dimension(150, 0)); // Adjust width here
+        ctx.inventoryPanel.setPreferredSize(new Dimension(150, 0));
+        styleComponent(ctx.inventoryPanel, true); // Style the container
         gameContainer.add(ctx.inventoryPanel, BorderLayout.EAST);
 
-        // Bottom: Buttons
-        JPanel bottomPanel = new JPanel();
-        ctx.btnPickUp = new JButton("Pick Up (E)");
+        // --- Bottom: Controls & Actions ---
+        JPanel bottomPanel = new JPanel(new GridBagLayout());
+        bottomPanel.setBackground(Color.BLACK);
+        bottomPanel.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, Color.GREEN));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
 
-        // Add dropdown for item selection
-        ctx.itemDropdown = new JComboBox<>();
-        ctx.itemDropdown.setPreferredSize(new Dimension(200, 25));
-
+        // 1. ACTION SECTION (Left)
+        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        styleComponent(actionPanel, true);
+        
+        ctx.btnPickUp = new JButton("Grab (E)");
         ctx.btnDrop = new JButton("Drop (R)");
-        bottomPanel.add(ctx.btnPickUp);
-        bottomPanel.add(new JLabel("Select Item:"));
-        bottomPanel.add(ctx.itemDropdown);
-        bottomPanel.add(ctx.btnDrop);
+        styleComponent(ctx.btnPickUp, false);
+        styleComponent(ctx.btnDrop, false);
+        
+        ctx.itemDropdown = new JComboBox<>();
+        ctx.itemDropdown.setPreferredSize(new Dimension(150, 25));
+        ctx.itemDropdown.setBackground(Color.BLACK);
+        ctx.itemDropdown.setForeground(Color.GREEN);
+        
+        actionPanel.add(ctx.btnPickUp);
+        actionPanel.add(ctx.btnDrop);
+        actionPanel.add(ctx.itemDropdown);
+
+        gbc.gridx = 0; gbc.weightx = 1.0; gbc.anchor = GridBagConstraints.WEST;
+        bottomPanel.add(actionPanel, gbc);
+
+        // 2. LIDAR CONTROLS (Center)
+        JPanel lidarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        styleComponent(lidarPanel, true);
+        
+        JButton btnScan = new JButton("SCAN");
+        styleComponent(btnScan, false);
+        btnScan.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent e) { model.kScan = true; }
+            public void mouseReleased(java.awt.event.MouseEvent e) { model.kScan = false; }
+        });
+
+        JButton btnWipe = new JButton("WIPE");
+        styleComponent(btnWipe, false);
+        btnWipe.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent e) { model.kWipe = true; }
+            public void mouseReleased(java.awt.event.MouseEvent e) { model.kWipe = false; }
+        });
+
+        lidarPanel.add(btnScan);
+        lidarPanel.add(btnWipe);
+        
+        gbc.gridx = 1; gbc.weightx = 0.5; gbc.anchor = GridBagConstraints.CENTER;
+        bottomPanel.add(lidarPanel, gbc);
+
+        // 3. MOVEMENT PAD (Right)
+        JPanel movePanel = new JPanel(new GridLayout(2, 3, 2, 2)); // 2 rows, 3 cols
+        styleComponent(movePanel, true);
+        
+        // Row 1
+        movePanel.add(new JLabel("")); // Spacer
+        movePanel.add(createMoveButton("▲", model, "UP"));
+        movePanel.add(new JLabel("")); // Spacer
+        
+        // Row 2
+        movePanel.add(createMoveButton("◄", model, "LEFT"));
+        movePanel.add(createMoveButton("▼", model, "DOWN"));
+        movePanel.add(createMoveButton("►", model, "RIGHT"));
+
+        gbc.gridx = 2; gbc.weightx = 0.5; gbc.anchor = GridBagConstraints.EAST;
+        bottomPanel.add(movePanel, gbc);
+
         gameContainer.add(bottomPanel, BorderLayout.SOUTH);
 
-
-
-
-
-
-
+        // --- Screens ---
         ctx.startScreen = new StartScreen(newGame, loadGame);
         ctx.pauseScreen = new PauseScreen(saveGame, resumeGame, quitToMenu);
 
@@ -88,11 +148,51 @@ public class GameView {
         return ctx;
     }
 
+    private static void styleComponent(JComponent c, boolean isContainer) {
+        c.setBackground(Color.BLACK);
+        c.setForeground(Color.GREEN);
+        if (!isContainer) {
+            c.setFont(new Font("Monospaced", Font.BOLD, 14));
+            if (c instanceof JButton) {
+                ((JButton) c).setFocusPainted(false);
+                ((JButton) c).setBorder(BorderFactory.createLineBorder(Color.GREEN));
+            }
+            if (c instanceof JTextArea || c instanceof JTextField) {
+                ((javax.swing.text.JTextComponent)c).setCaretColor(Color.GREEN);
+            }
+        }
+    }
 
-    
+    private static JButton createMoveButton(String text, GameModel model, String direction) {
+        JButton btn = new JButton(text);
+        styleComponent(btn, false);
+        btn.setPreferredSize(new Dimension(45, 45)); // Square buttons
+        
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent e) {
+                switch(direction) {
+                    case "UP": model.kUp = true; break;
+                    case "DOWN": model.kDown = true; break;
+                    case "LEFT": model.kLeft = true; break;
+                    case "RIGHT": model.kRight = true; break;
+                }
+            }
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                switch(direction) {
+                    case "UP": model.kUp = false; break;
+                    case "DOWN": model.kDown = false; break;
+                    case "LEFT": model.kLeft = false; break;
+                    case "RIGHT": model.kRight = false; break;
+                }
+            }
+        });
+        return btn;
+    }
+
     // 3. The Renderer Class
     public static class DisplayGame extends JPanel {
-        
 
         // ===========================================
 
@@ -108,11 +208,10 @@ public class GameView {
             }
         }
 
-        private List<Dot> dots = new LinkedList<>(); // used the list interface referenc so I can swap for other implementations if needs be
-        private static final int MAX_DOTS = 5000; // too many and the game gets too slow
+        private List<Dot> dots = new LinkedList<>(); 
+        private static final int MAX_DOTS = 5000; 
 
         // ===========================================
-
 
         private GameModel model;
 
@@ -120,12 +219,10 @@ public class GameView {
             this.model = model;
             setPreferredSize(new Dimension(SCREEN_W, SCREEN_H));
             setBackground(Color.BLACK);
-            setFocusable(true); // Crucial for KeyListeners
+            setFocusable(true); 
         }
 
-
         // ===============================
-
         
         // Rendering
         @Override
@@ -140,52 +237,60 @@ public class GameView {
             // Draw Background
             g2.setColor(Color.BLACK);
             g2.fillRect(0, 0,  getWidth(),getHeight());
-            g2.setColor(Color.white);
-            // String timer = ""+duration;
+            
+            // Draw Timer & HUD
+            g2.setColor(Color.GREEN);
+            g2.setFont(new Font("Monospaced", Font.BOLD, 20));
+    
+            if(model.timer != null) {
+                g2.drawString("TIME: " + model.timer.seconds + "s", 20, 50);
+            }
 
-            // g2.drawString(timer, SCREEN_W/2, 40);
-            g2.setColor(Color.BLACK);
+            g2.drawString("TOKENS: " + model.player.getInventory().getList().size() + "/3", 20, 80);
 
-            // Draw all Dots, including those that are technically occluded but what the heck
+            // Draw all Dots
             for (Dot d : dots) {
                 // Transform world coordinates to screen coordinates
-                // 1. Relative to player
                 double rx = d.x - model.player.getPx();
                 double ry = d.y - model.player.getPy();
                 
-                // cos-theta = costheta
-                // -sin-theta = sintheta
-
-                // 2. Rotate to face player's view (Standard rotation matrix)
+                // Rotate
                 double rotX = (rx * Math.cos(model.player.getAngle())) + (ry * Math.sin(model.player.getAngle()));
-
-                // System.out.printf("%2f %2f %2f",rotX, rx * Math.cos(model.player.getAngle()), ry * Math.sin(model.player.getAngle()));
-                // System.out.println();
-                
                 double rotY = (rx * Math.sin(-model.player.getAngle())) + (ry * Math.cos(model.player.getAngle()));
 
-                // 3. If behind us, don't draw
+                // If behind us, don't draw
                 if (rotX <= 0.1) continue;
 
-                // 4. Project to screen (Perspective math: Y / X)
-                double scale = 500.0; // Zoom factor
+                // Project to screen
+                double scale = 500.0; 
                 int screenX = (int)(getWidth()/2 + (rotY / rotX) * scale);
                 int screenY = getHeight()/2;
                 
-                // 5. Calculate Height (Closer = Bigger)
-                int height = (int)(SCREEN_H / rotX); // why the fuck is rotx this magical constant that can scale the height of the walls?. 
-                int width  = Math.max(2, height / 8); // Thin rectangles
+                // Calculate Height
+                int height = (int)(SCREEN_H / rotX); 
+                int width  = Math.max(2, height / 8); 
 
-                // 6. Shading (Darker if further away)
+                // Shading (Darker if further away)
                 float brightness = (float)(1.0 / (rotX * 0.3 + 1)); 
                 brightness = Math.min(1f, Math.max(0f, brightness));
                 
+                // Special handling for PURE BLACK (Closed Portals)
+                // If it's black, we don't apply shading, otherwise it stays invisible against black background
+                // Or we keep it black to represent a void. Let's keep it black.
                 Color c = d.color;
-                Color shaded = new Color(
-                    (int)(c.getRed() * brightness),
-                    (int)(c.getGreen() * brightness),
-                    (int)(c.getBlue() * brightness)
-                );
+                Color shaded;
+                
+                if (c.equals(Color.BLACK)) {
+                     // For visibility against the black background, maybe a very dark grey outline?
+                     // Or just pure black (Void). Let's do pure black.
+                     shaded = Color.BLACK;
+                } else {
+                    shaded = new Color(
+                        (int)(c.getRed() * brightness),
+                        (int)(c.getGreen() * brightness),
+                        (int)(c.getBlue() * brightness)
+                    );
+                }
                 
                 g2.setColor(shaded);
                 g2.fillRect(screenX - width/2, screenY - height/2, width, height);
@@ -196,24 +301,15 @@ public class GameView {
             g2.drawString("MAP ITEMS: " + model.countItems(), 20, 20);
         }
 
-
-
-        // ===============================
-
-
         // Wipes the map
         public void wipeMap(){
-            for (int idx=0 ; idx<dots.size(); idx++){
-                dots.remove(idx);
-            }
+            dots.clear();
         }
 
         // Raycaster
         public void fireLidar() {
-
             double startAngle = model.player.getAngle() - (VIEW_ANGLE)/2; 
             double endAngle   = model.player.getAngle() + (VIEW_ANGLE)/2;
-
             double stepAngle  = 0.1;
 
             for (double a = startAngle; a < endAngle; a += stepAngle) {
@@ -221,68 +317,67 @@ public class GameView {
             }
         }
 
-
-
         private void castSingleRay(double angle) {
             double rayX = model.player.getPx();
             double rayY = model.player.getPy();
             
-            // Math: Direction of the ray
             double Rx = Math.cos(angle);
             double Ry = Math.sin(angle);
             
             double distance = 0;
             
-            // This is easier to understand than DDA algorithms.
-            while (distance < 50.0) { // Max range 25 meters
+            while (distance < 50.0) { 
                 rayX += Rx * 0.05;
                 rayY += Ry * 0.05;
                 distance += 0.05;
 
                 boolChar tile = getTile(rayX, rayY);
 
-                if ((tile.getB() == true)&&(tile.getC()=='#')) {
-                    // Hit Wall -> Add White Dot
-                    addDot(rayX, rayY, distance, Color.WHITE);
+                // If it hits a "wall-like" structure (Wall or Portal)
+                if (tile.getB()) {
+                    
+                    if (tile.getC() == '#') {
+                        // Standard Wall -> White
+                        addDot(rayX, rayY, distance, Color.WHITE);
+                    } 
+                    else if ("NSEW".indexOf(tile.getC()) != -1) {
+                        // Closed Portal -> Black (Void)
+                        addDot(rayX, rayY, distance, Color.BLACK);
+                    }
+                    else if ("nsew".indexOf(tile.getC()) != -1) {
+                        // Open Portal -> Ender Purple
+                        addDot(rayX, rayY, distance, new Color(138, 43, 226));
+                    }
+                    
                     return; // Stop ray
                 } 
-                else if ((tile.getB()==false)&&(tile.getC()!='S')&&(tile.getC()!='.')) {
-                    // Hit Item (1-9) -> Add Yellow Dot
+                
+                // If it hits an Item (1-9)
+                else if (!tile.getB() && (tile.getC() >= '1' && tile.getC() <= '9')) {
+                    // Items are pass-through but draw a dot
                     switch (tile.getC()){
-                        case '1':
-                            addDot(rayX, rayY, distance, Color.YELLOW);
-                            break;
-                        case '2':
-                            addDot(rayX, rayY, distance, Color.BLUE);
-                            break;
-
-                        case '3':
-                            addDot(rayX, rayY, distance, Color.RED);
-                            break;
-
+                        case '1': addDot(rayX, rayY, distance, Color.YELLOW); break;
+                        case '2': addDot(rayX, rayY, distance, Color.BLUE); break;
+                        case '3': addDot(rayX, rayY, distance, Color.RED); break;
+                        default:  addDot(rayX, rayY, distance, Color.GREEN); break;
                     }
-
-                    return; // Stop ray
+                    return; 
                 }
             }
         }
 
-
-        // If we hit somenthing that can be registered as a dot, me create a dot
         private void addDot(double x, double y, double dist, Color c) {
             dots.add(new Dot(x, y, dist, c));
-            if (dots.size() > MAX_DOTS) dots.remove(0); // Oldest dot deleted
+            if (dots.size() > MAX_DOTS) dots.remove(0); 
         }
 
-
         private boolChar getTile(double x, double y) {
-
+            // Default to Wall if out of bounds
             boolChar answer = new boolChar('#', true);
 
             int mx = (int)x;
             int my = (int)y;
 
-            // Bounds check
             if (my < 0 || my >= model.getCurrentMap().length || mx < 0 || mx >= model.getCurrentMap()[0].length()) {
                 return answer;
             }
@@ -290,26 +385,41 @@ public class GameView {
             char cha = model.getCurrentMap()[my].charAt(mx);
 
             switch (cha) {
+                // Items, Empty Space, and Start Marker ('A') = Not a Wall (b=false)
                 case '1': case '2': case '3': case '4': case '5':
                 case '6': case '7': case '8': case '9':
+                case '.':
+                case 'A': // 'A' is the Start/Avatar marker in new JSON, treat as empty space
                     answer.setB(false);
                     answer.setC(cha);
                     break;
+                
+                // Explicit Walls
+                case '#': 
+                     answer.setB(true);
+                     answer.setC('#');
+                     break;
 
-                case 'S':
-                    answer.setB(false);
-                    answer.setC('S');
+                // Portals - Open (Lower case)
+                case 'n': case 's': case 'e': case 'w': 
+                    answer.setB(true); // Stop ray (visible)
+                    answer.setC(cha);
                     break;
-
-                case '.':
-                    answer.setB(false);
-                    answer.setC('.');
+                    
+                // Portals - Closed (Upper case)
+                case 'N': case 'S': case 'E': case 'W':
+                    answer.setB(true); // Stop ray (visible)
+                    answer.setC(cha);
+                    break;
+                    
+                default:
+                    // Fallback for anything else (like spaces) is a wall
+                    answer.setB(true);
+                    answer.setC('#');
                     break;
             }
             return answer;
-
         }
-
 
         private class boolChar{
             char c;
@@ -318,34 +428,10 @@ public class GameView {
                 c=ic;
                 b=ib;
             }
-            public void setB(boolean b) {
-                this.b = b;
-            }
-            public void setC(char c) {
-                this.c = c;
-            }
-            public char getC() {
-                return c;
-            }            
-            public boolean getB() {
-                return b;
-            }
+            public void setB(boolean b) { this.b = b; }
+            public void setC(char c) { this.c = c; }
+            public char getC() { return c; }            
+            public boolean getB() { return b; }
         }
-
-
-        private void modifyMap(int x, int y, char newChar) {
-            char[] row = model.getCurrentMap()[y].toCharArray();
-            row[x] = newChar;
-            model.getCurrentMap()[y] = new String(row);
-        }
-
-
-        
-
-
     }
 }
-
-
-
-
