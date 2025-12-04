@@ -4,7 +4,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 
 public class SoundManager {
 
-    
+
     private static final String ASSET_PATH = "assets" + File.separator;
     
     // Define your music files here for easy changing
@@ -58,8 +58,7 @@ public class SoundManager {
                         case 1: filename = "pickup.wav"; break;                 
                         case 2: filename = "drop.wav"; break;
                         case 3: filename = "unlock.wav"; break; 
-                        case 4: filename = "whoosh.wav"; break; 
-                        case 5: filename = "startGame.wav"; break;    
+                        case 4: filename = "startGame.wav"; break;    
                     }
                     
                     if (!filename.isEmpty()) playSoundOnce(filename);
