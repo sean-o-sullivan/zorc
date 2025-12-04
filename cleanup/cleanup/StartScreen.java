@@ -11,7 +11,7 @@ public class StartScreen extends JPanel {
 
     public StartScreen(ActionListener newGameAction, ActionListener loadGameAction) {
         setLayout(new GridBagLayout());
-        setBackground(Color.DARK_GRAY);
+        setBackground(Color.BLACK);
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);

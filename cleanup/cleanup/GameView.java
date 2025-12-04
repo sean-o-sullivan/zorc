@@ -183,6 +183,33 @@ public class GameView {
         return btn;
     }
 
+
+    public enum RoomTheme {
+        CELL(0, Color.WHITE),
+        PILLAR(1, Color.LIGHT_GRAY),
+        LIBRARY(2, new Color(139, 69, 19)),  // Brown
+        SERVER(3, Color.GREEN),              // Matrix style
+        HYPOSTYLE(4, Color.MAGENTA),         // Mystical
+        ATRIUM(5, Color.ORANGE),             // Grand
+        SERPENT(6, Color.RED);               // Danger
+
+        private final int id;
+        private final Color color;
+
+        RoomTheme(int id, Color color) {
+            this.id = id;
+            this.color = color;
+        }
+
+        public static Color getColor(int id) {
+            for (RoomTheme t : values()) {
+                if (t.id == id) return t.color;
+            }
+            return Color.WHITE; // Fallback
+        }
+    }
+
+
     // 3. The Renderer Class
     public static class DisplayGame extends JPanel {
 
@@ -303,7 +330,10 @@ public class GameView {
 
                 if (tile.getB()) {
                     if (tile.getC() == '#') {
-                        addDot(rayX, rayY, distance, Color.WHITE);
+                        // Get Room ID
+                        int rId = model.player.getCurrentRoom().getId();
+                        // Use Enum to get specific color
+                        addDot(rayX, rayY, distance, RoomTheme.getColor(rId));
                     } 
                     else if ("NSEW".indexOf(tile.getC()) != -1) {
                         addDot(rayX, rayY, distance, Color.DARK_GRAY); // Closed = Void

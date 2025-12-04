@@ -253,12 +253,10 @@ Core Java Concepts Implementation:
       Design and implement Unit Tests using JUnit to verify game mechanics.
       Use Annotations to provide metadata for commands or game configuration.
 
-
 Advanced Features (Optional/Bonus) only when the above has been completed:
 
 Integrate Multithreading for timed events or background NPC actions.
 Add Networking capability for multiplayer gameplay.
- 
 
 Some possible gameplay Enhancements:
 
