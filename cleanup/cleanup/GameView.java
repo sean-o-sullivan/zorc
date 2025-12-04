@@ -251,10 +251,15 @@ public class GameView {
             // HUD
             g2.setColor(Color.GREEN);
             g2.setFont(new Font("Monospaced", Font.BOLD, 20));
-    
-            if(model.timer != null) {
-                g2.drawString("TIME: " + model.timer.seconds + "s", 20, 50);
+
+            if (model.timer != null) {
+
+                String formattedTime = String.format("%.1f", model.timer.seconds);
+
+                g2.drawString("TIME: " + formattedTime + "s", 20, 50);
             }
+
+
             g2.drawString("TOKENS: " + model.player.getInventory().getList().size() + "/3", 20, 80);
 
             if (model.player.getCurrentRoom() != null) {
@@ -309,12 +314,14 @@ public class GameView {
             double endAngle   = model.player.getAngle() + (VIEW_ANGLE)/2;
             double stepAngle  = 0.1;
 
+
             for (double a = startAngle; a < endAngle; a += stepAngle) {
                 castSingleRay(a);
             }
         }
 
         private void castSingleRay(double angle) {
+
             double rayX = model.player.getPx();
             double rayY = model.player.getPy();
             double Rx = Math.cos(angle);
@@ -404,7 +411,7 @@ public class GameView {
         private class boolChar{
             char c; boolean b;
             boolChar(char ic, boolean ib){ c=ic; b=ib; }
-            public void setB(boolean b) { this.b = b; }
+            public void setB(boolean b) { this.b = b; } // is the thing we are walking into solid or not?
             public void setC(char c) { this.c = c; }
             public char getC() { return c; }            
             public boolean getB() { return b; }

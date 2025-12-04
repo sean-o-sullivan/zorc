@@ -45,7 +45,8 @@ public void startGame() {
             // Start Timer Thread
             timer = new GameTimer(); 
             timer.start();
-            
+            SoundManager.triggerSfx(5);
+
             if (dialogArea != null) {
                 Typewriter.type(dialogArea, "System Booting ..... \n\nINITIALIZING LIDAR... [OK] \n LOADING MAP DATA... ░░░░░░ 20%\n ... ▓▓▓▒▒░ 45%\nERROR: SECTOR 7 CORRUPTED >> 0xFA82 // ｱｲｳｴｵ\nRETRYING... ⣾⣽⣻⢿⡿⣟\nCONNECTION ESTABLISHED.\n\nLidar guidance system Online.\n\n Hello there! \n I am your lidar guidance system.... \n\nor L for short!\n\n We seem to have woken up in a liminal space... \n\n ... ... ...\n\n The space does have shape! \n\n We can map it! \n\s\s\s >Press SPACE to fire dots. \n\n And it seems that we can look around... \n\s\s\s Press ARROW_KEYS to navigate\n\n I sense there are in a series of interconnected rooms! \n\n Find 3 tokens to open portals. [ Ξ ] ... The portals appear dark on our lidar\n\n If the strain gets too large we can forget the dots \n\s\s\s >Press Q to forget dots\n\n And remember - \n\t move quickly!");
             

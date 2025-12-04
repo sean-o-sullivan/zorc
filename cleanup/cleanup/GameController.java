@@ -90,7 +90,11 @@ public class GameController {
         
 
         ActionListener actionLoadGame = e -> {
+
+            // SoundManager.triggerSfx(6);  /// this must be kept at all costs
+
             String filename = StartScreen.showLoadDialog(ui.frame);
+
             if (filename != null) {
                 // 1. Initialize the base world first so objects exist
                 model.startGame(); 
@@ -249,8 +253,10 @@ public class GameController {
         new javax.swing.Timer(16, e -> {
                 if (!isPaused) {
                     model.updatePhysics();
-                    if (model.kScan) ui.gamePanel.fireLidar();
-                    if (model.kWipe) ui.gamePanel.wipeMap();
+
+                    if (model.kScan)  {ui.gamePanel.fireLidar();}
+
+                    if (model.kWipe) { ui.gamePanel.wipeMap(); }
                     ui.gamePanel.repaint();
                 }
             }).start();
