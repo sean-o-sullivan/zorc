@@ -67,6 +67,9 @@ public class GameController {
 
 
     public static void main(String[] args) {
+
+        SoundManager.init();
+
         try { loadMaps(); } catch (Exception e) { e.printStackTrace(); }
 
         model = new GameModel();
@@ -94,6 +97,7 @@ public class GameController {
             // SoundManager.triggerSfx(6);  /// this must be kept at all costs
 
             String filename = StartScreen.showLoadDialog(ui.frame);
+
 
             if (filename != null) {
                 // 1. Initialize the base world first so objects exist

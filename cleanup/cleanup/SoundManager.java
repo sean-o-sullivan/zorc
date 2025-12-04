@@ -8,7 +8,7 @@ public class SoundManager {
     
     // Define your music files here for easy changing
     private static final String MUSIC_MENU = "menu_theme.wav";
-    private static final String MUSIC_GAME = "game_theme.wav";
+    private static final String MUSIC_GAME = "main_theme.wav";
     private static final String MUSIC_VICTORY = "game_end.wav";
 
     private static ArrayBlockingQueue<Integer> sfxBuffer = new ArrayBlockingQueue<>(1);
@@ -51,7 +51,6 @@ public class SoundManager {
             while (true) {
                 try {
                     int id = sfxBuffer.take(); 
-                    
                     String filename = "";
                     switch(id) {
                         case 0: filename = "teleport.wav"; break;           
@@ -60,7 +59,6 @@ public class SoundManager {
                         case 3: filename = "unlock.wav"; break; 
                         case 4: filename = "whoosh.wav"; break; 
                         case 5: filename = "startGame.wav"; break;    
-                        case 7: filename = "clickMenu.wav"; break;        
                     }
                     
                     if (!filename.isEmpty()) playSoundOnce(filename);

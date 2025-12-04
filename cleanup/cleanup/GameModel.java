@@ -31,7 +31,8 @@ public class GameModel {
     public void setDialogArea(JTextArea area) { this.dialogArea = area; }
 
 public void startGame() {
-        SoundManager.init();
+    
+        SoundManager.playGameMusic();
         
         try {
             loadWorldFromJson("game-info.json");
