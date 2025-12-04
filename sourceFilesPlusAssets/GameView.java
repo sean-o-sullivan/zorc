@@ -357,7 +357,11 @@ public class GameView {
             g2.drawString("MAP ITEMS: " + model.countItems(), 20, 20);
         }
 
-        public void wipeMap(){ dots.clear(); }
+        public void wipeMap(){ 
+            for (int i=0; i<dots.size();i++){
+                dots.remove(i);
+            }
+        }
 
         public void fireLidar() {
             double startAngle = model.player.getAngle() - (VIEW_ANGLE)/2; 
