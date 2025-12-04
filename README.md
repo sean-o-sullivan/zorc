@@ -2,6 +2,8 @@
 
 **Lidar Zork** is a hybrid text-adventure and 2D raycasting exploration game built using the **Model-View-Controller (MVC)** architecture. You play as a lost entity navigating a pitch-black liminal space using only a Lidar scanner and text commands.
 
+![](https://github.com/sean-o-sullivan/zorc/blob/main/demo.gif)
+
 ### 🏃 How to Run
 
 **Prerequisites:** Java Runtime Environment (JRE) 8 or higher.
