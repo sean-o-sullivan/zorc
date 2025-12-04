@@ -27,7 +27,7 @@ public class CommandWords {
         cmds+="Valid commands are: ";
 
         for (String command : validCommands.keySet()) {
-            cmds+=command+"";
+            cmds+=command+"\s";
         }
         cmds+="\n";
         return cmds;
