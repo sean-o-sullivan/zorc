@@ -393,32 +393,20 @@ public static void saveGame(GameModel model, String filename) {
     }
 }
 
-// Updated to accept String filename parameter
 public static void loadGame(GameModel model, String filename) {
     try {
-        // FIX: Use the filename passed in, not hardcoded "savegame.json"
         String content = new String(Files.readAllBytes(Paths.get(filename)));
         
         // 1. Load Player
-        String playerJson = JsonParser.getObjectContent(content, "player"); // Ensure you use JsonParser (or JsonParser if that's what you named it)
+        String playerJson = JsonParser.getObjectContent(content, "player"); 
         model.player.fromJson(playerJson);
         
-        // Re-link player to actual room object
         int savedRoomId = model.player.getSavedRoomId(playerJson);
         
-        // Iterate over map values to find the room
-        for(Room r : model.getRooms().values()) {
-            if(r.getId() == savedRoomId) {
-                model.player.setCurrentRoom(r);
-                break;
-            }
-        }
-
-        // 2. Load Rooms
+        // Iterate over rooms to update them
         String roomsArray = JsonParser.getArrayContent(content, "rooms");
         if (!roomsArray.isEmpty()) {
             String[] roomStrings = roomsArray.split("\\}, \\s*\\{");
-
             for (String rStr : roomStrings) {
                 String cleanStr = rStr.trim();
                 if (!cleanStr.startsWith("{")) cleanStr = "{" + cleanStr;
@@ -426,21 +414,30 @@ public static void loadGame(GameModel model, String filename) {
                 
                 int rId = Integer.parseInt(JsonParser.getValue(cleanStr, "id"));
                 
-                for (Room r : model.getRooms().values()) {
-                    if (r.getId() == rId) {
-                        r.fromJson(cleanStr); 
-                        break;
-                    }
+                Room r = model.getRooms().get(String.valueOf(rId));
+                if (r != null) {
+                    r.fromJson(cleanStr); 
                 }
             }
         }
-        
+
+        // Link player to room
+        for(Room r : model.getRooms().values()) {
+            if(r.getId() == savedRoomId) {
+                model.player.setCurrentRoom(r);
+                // CRITICAL FIX: Sync the Model's map pointer with the Room's new map
+                model.setMap(r.getMap()); 
+                break;
+            }
+        }
+
         System.out.println("Game Loaded Successfully from " + filename);
         
     } catch (IOException e) {
         System.out.println("No save file found: " + filename);
     }
 }
+
 
 }
 

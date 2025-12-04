@@ -30,40 +30,64 @@ public class GameModel {
     
     public void setDialogArea(JTextArea area) { this.dialogArea = area; }
 
-    public void startGame() {
-        // Initialize Sound System
+public void startGame() {
         SoundManager.init();
         
-        // Load JSON
         try {
             loadWorldFromJson("game-info.json");
             
-            // Randomly assign rooms to N/S/E/W doors
-            randomizeDoors(); 
-            pruneInvalidDoors();
-
+            // Remove the randomizer. We trust the JSON.
+            // randomizeDoors(); 
+            
+            // CLEAN UP THE MAP: Turn visual 'N' into '#' if no logical connection exists
+            pruneInvalidDoors(); 
+            
             // Start Timer Thread
             timer = new GameTimer(); 
             timer.start();
             
-            // Intro Text
             if (dialogArea != null) {
-                Typewriter.type(dialogArea, "System Booting ..... \n\nINITIALIZING LIDAR... [OK] \n LOADING MAP DATA... ░░░░░░ 20%\n ... ▓▓▓▒▒░ 45%\nERROR: SECTOR 7 CORRUPTED >> 0xFA82 // ｱｲｳｴｵ\nRETRYING... ⣾⣽⣻⢿⡿⣟\nCONNECTION ESTABLISHED.\n\nLidar guidance system Online.\n\n Hello there! \n I am your lidar guidance system.... \n\nor L for short!\n\n We seem to have woken up in a liminal space... \n\n ... ... ...\n\n The space does have shape! \n\n We can map it! \n\s\s\s >Press SPACE to fire dots. \n\n And it seems that we can look around... \n\s\s\s Press ARROW_KEYS to navigate\n\n I sense there are in a series of interconnected rooms! \n\n Find 3 tokens to open portals. [ Ξ ] ... The portals appear dark on our lidar\n\n If the strain gets too large we can forget the dots \n\s\s\s >Press Q to forget dots\n\n And remember - \n\t move quickly!");
-            
-                try { // this is to ensure that the order i want is maintained. In exchange we get an imperceptible delay in the ui. 
-                        Thread.sleep(1);   
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }     
-
-                Typewriter.type(dialogArea, " \n\n\n\n\n\n\n"); // clear the screen a little, every usage of the type method creates a new thread, but since typewriter is one object there is only one lock
-
+               // ... (Your intro text here) ...
+               Typewriter.type(dialogArea, "System Online.");
             }
             
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    // NEW METHOD: Ensures the visual map matches the logical connections
+    private void pruneInvalidDoors() {
+        for (Room r : rooms.values()) {
+            String[] map = r.getMap();
+            if (map == null) continue;
+            
+            boolean roomModified = false;
+            for (int y = 0; y < map.length; y++) {
+                char[] row = map[y].toCharArray();
+                boolean rowModified = false;
+                
+                for (int x = 0; x < row.length; x++) {
+                    char c = row[x];
+                    // If visual map has a door...
+                    if ("NSEW".indexOf(c) != -1) {
+                        // ...but logic says no door exists...
+                        if (!r.doorTargets.containsKey(String.valueOf(c))) {
+                            row[x] = '#'; // Brick it up
+                            rowModified = true;
+                        }
+                    }
+                }
+                
+                if (rowModified) {
+                    map[y] = new String(row);
+                    roomModified = true;
+                }
+            }
+            if (roomModified) r.setMap(map);
+        }
+    }
+
     
     // Naive implementation: Randomly links doors 
     private void randomizeDoors() {
@@ -396,31 +420,6 @@ public class GameModel {
         }
     }
 
-    private void pruneInvalidDoors() {
-        for (Room r : rooms.values()) {
-            String[] map = r.getMap();
-            if (map == null) continue;
-            
-            for (int y = 0; y < map.length; y++) {
-                char[] row = map[y].toCharArray();
-                boolean modified = false;
-                
-                for (int x = 0; x < row.length; x++) {
-                    char c = row[x];
-                    // If it's a door char, but no connection exists, wall it off
-                    if ("NSEW".indexOf(c) != -1) {
-                        if (!r.doorTargets.containsKey(String.valueOf(c))) {
-                            row[x] = '#';
-                            modified = true;
-                        }
-                    }
-                }
-                
-                if (modified) {
-                    map[y] = new String(row);
-                }
-            }
-            r.setMap(map);
-        }
-    }
+
+
 }

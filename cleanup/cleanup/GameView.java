@@ -6,25 +6,21 @@ import java.awt.event.ActionListener;
 
 public class GameView {
 
-    // Helper class for Controller to access components
     public static class UIContext {
         public JFrame frame;
         public JPanel mainContainer;
         public CardLayout cardLayout;
-        
         public DisplayGame gamePanel;
         public GameDialogPanel dialogPanel;
         public InventoryPanel inventoryPanel;
         public StartScreen startScreen;
         public PauseScreen pauseScreen;
-        
         public JButton btnPickUp;
         public JButton btnDrop;
         public JComboBox<String> itemDropdown;
     }
 
-
-  public static UIContext createGameUI(GameModel model, 
+    public static UIContext createGameUI(GameModel model, 
                                          ActionListener newGame, 
                                          ActionListener loadGame,
                                          ActionListener saveGame,
@@ -37,8 +33,6 @@ public class GameView {
         
         // --- STYLING: Window Frame & Background ---
         ctx.frame.getContentPane().setBackground(Color.BLACK); 
-        // Note: Changing the actual Title Bar color is OS-dependent and usually requires 
-        // external libraries (like FlatLaf), but this handles the internal frame content.
         
         ctx.cardLayout = new CardLayout();
         ctx.mainContainer = new JPanel(ctx.cardLayout);
@@ -53,13 +47,13 @@ public class GameView {
         // --- Left: Dialog Panel ---
         ctx.dialogPanel = new GameDialogPanel();
         ctx.dialogPanel.setPreferredSize(new Dimension(250, 0));
-        styleComponent(ctx.dialogPanel, true); // Style the container
+        styleComponent(ctx.dialogPanel, true);
         gameContainer.add(ctx.dialogPanel, BorderLayout.WEST);
 
         // --- Right: Inventory Panel ---
         ctx.inventoryPanel = new InventoryPanel(model);
         ctx.inventoryPanel.setPreferredSize(new Dimension(150, 0));
-        styleComponent(ctx.inventoryPanel, true); // Style the container
+        styleComponent(ctx.inventoryPanel, true);
         gameContainer.add(ctx.inventoryPanel, BorderLayout.EAST);
 
         // --- Bottom: Controls & Actions ---
@@ -69,7 +63,7 @@ public class GameView {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
 
-        // 1. ACTION SECTION (Left)
+        // 1. ACTION SECTION
         JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         styleComponent(actionPanel, true);
         
@@ -90,7 +84,7 @@ public class GameView {
         gbc.gridx = 0; gbc.weightx = 1.0; gbc.anchor = GridBagConstraints.WEST;
         bottomPanel.add(actionPanel, gbc);
 
-        // 2. LIDAR CONTROLS (Center)
+        // 2. LIDAR CONTROLS
         JPanel lidarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         styleComponent(lidarPanel, true);
         
@@ -114,16 +108,14 @@ public class GameView {
         gbc.gridx = 1; gbc.weightx = 0.5; gbc.anchor = GridBagConstraints.CENTER;
         bottomPanel.add(lidarPanel, gbc);
 
-        // 3. MOVEMENT PAD (Right)
-        JPanel movePanel = new JPanel(new GridLayout(2, 3, 2, 2)); // 2 rows, 3 cols
+        // 3. MOVEMENT PAD
+        JPanel movePanel = new JPanel(new GridLayout(2, 3, 2, 2));
         styleComponent(movePanel, true);
         
-        // Row 1
-        movePanel.add(new JLabel("")); // Spacer
+        movePanel.add(new JLabel("")); 
         movePanel.add(createMoveButton("▲", model, "UP"));
-        movePanel.add(new JLabel("")); // Spacer
+        movePanel.add(new JLabel("")); 
         
-        // Row 2
         movePanel.add(createMoveButton("◄", model, "LEFT"));
         movePanel.add(createMoveButton("▼", model, "DOWN"));
         movePanel.add(createMoveButton("►", model, "RIGHT"));
@@ -166,7 +158,7 @@ public class GameView {
     private static JButton createMoveButton(String text, GameModel model, String direction) {
         JButton btn = new JButton(text);
         styleComponent(btn, false);
-        btn.setPreferredSize(new Dimension(45, 45)); // Square buttons
+        btn.setPreferredSize(new Dimension(45, 45)); 
         
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
@@ -194,8 +186,6 @@ public class GameView {
     // 3. The Renderer Class
     public static class DisplayGame extends JPanel {
 
-        // ===========================================
-
         private static final int SCREEN_W = 1000;
         private static final int SCREEN_H = 600;
         private static final double VIEW_ANGLE = Math.toRadians(90); 
@@ -210,9 +200,6 @@ public class GameView {
 
         private List<Dot> dots = new LinkedList<>(); 
         private static final int MAX_DOTS = 5000; 
-
-        // ===========================================
-
         private GameModel model;
 
         public DisplayGame(GameModel model) {
@@ -221,68 +208,52 @@ public class GameView {
             setBackground(Color.BLACK);
             setFocusable(true); 
         }
-
-        // ===============================
         
-        // Rendering
         @Override
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
-            
             if (model.getCurrentMap() == null) return;
             if (model.player == null) return;
             
             Graphics2D g2 = (Graphics2D) g;
 
-            // Draw Background
+            // Background
             g2.setColor(Color.BLACK);
             g2.fillRect(0, 0,  getWidth(),getHeight());
             
-            // Draw Timer & HUD
+            // HUD
             g2.setColor(Color.GREEN);
             g2.setFont(new Font("Monospaced", Font.BOLD, 20));
     
             if(model.timer != null) {
                 g2.drawString("TIME: " + model.timer.seconds + "s", 20, 50);
             }
-
             g2.drawString("TOKENS: " + model.player.getInventory().getList().size() + "/3", 20, 80);
 
-            // Draw all Dots
+            // Draw Dots
             for (Dot d : dots) {
-                // Transform world coordinates to screen coordinates
                 double rx = d.x - model.player.getPx();
                 double ry = d.y - model.player.getPy();
                 
-                // Rotate
                 double rotX = (rx * Math.cos(model.player.getAngle())) + (ry * Math.sin(model.player.getAngle()));
                 double rotY = (rx * Math.sin(-model.player.getAngle())) + (ry * Math.cos(model.player.getAngle()));
 
-                // If behind us, don't draw
                 if (rotX <= 0.1) continue;
 
-                // Project to screen
                 double scale = 500.0; 
                 int screenX = (int)(getWidth()/2 + (rotY / rotX) * scale);
                 int screenY = getHeight()/2;
-                
-                // Calculate Height
                 int height = (int)(SCREEN_H / rotX); 
                 int width  = Math.max(2, height / 8); 
 
-                // Shading (Darker if further away)
+                // Shading
                 float brightness = (float)(1.0 / (rotX * 0.3 + 1)); 
                 brightness = Math.min(1f, Math.max(0f, brightness));
                 
-                // Special handling for PURE BLACK (Closed Portals)
-                // If it's black, we don't apply shading, otherwise it stays invisible against black background
-                // Or we keep it black to represent a void. Let's keep it black.
                 Color c = d.color;
                 Color shaded;
                 
                 if (c.equals(Color.BLACK)) {
-                     // For visibility against the black background, maybe a very dark grey outline?
-                     // Or just pure black (Void). Let's do pure black.
                      shaded = Color.BLACK;
                 } else {
                     shaded = new Color(
@@ -296,17 +267,12 @@ public class GameView {
                 g2.fillRect(screenX - width/2, screenY - height/2, width, height);
             }
             
-            // Simple HUD
             g2.setColor(Color.GREEN);
             g2.drawString("MAP ITEMS: " + model.countItems(), 20, 20);
         }
 
-        // Wipes the map
-        public void wipeMap(){
-            dots.clear();
-        }
+        public void wipeMap(){ dots.clear(); }
 
-        // Raycaster
         public void fireLidar() {
             double startAngle = model.player.getAngle() - (VIEW_ANGLE)/2; 
             double endAngle   = model.player.getAngle() + (VIEW_ANGLE)/2;
@@ -320,10 +286,8 @@ public class GameView {
         private void castSingleRay(double angle) {
             double rayX = model.player.getPx();
             double rayY = model.player.getPy();
-            
             double Rx = Math.cos(angle);
             double Ry = Math.sin(angle);
-            
             double distance = 0;
             
             while (distance < 50.0) { 
@@ -333,28 +297,19 @@ public class GameView {
 
                 boolChar tile = getTile(rayX, rayY);
 
-                // If it hits a "wall-like" structure (Wall or Portal)
                 if (tile.getB()) {
-                    
                     if (tile.getC() == '#') {
-                        // Standard Wall -> White
                         addDot(rayX, rayY, distance, Color.WHITE);
                     } 
                     else if ("NSEW".indexOf(tile.getC()) != -1) {
-                        // Closed Portal -> Black (Void)
-                        addDot(rayX, rayY, distance, Color.BLACK);
+                        addDot(rayX, rayY, distance, Color.BLACK); // Closed = Void
                     }
                     else if ("nsew".indexOf(tile.getC()) != -1) {
-                        // Open Portal -> Ender Purple
-                        addDot(rayX, rayY, distance, new Color(138, 43, 226));
+                        addDot(rayX, rayY, distance, new Color(138, 43, 226)); // Open = Purple
                     }
-                    
-                    return; // Stop ray
+                    return; 
                 } 
-                
-                // If it hits an Item (1-9)
                 else if (!tile.getB() && (tile.getC() >= '1' && tile.getC() <= '9')) {
-                    // Items are pass-through but draw a dot
                     switch (tile.getC()){
                         case '1': addDot(rayX, rayY, distance, Color.YELLOW); break;
                         case '2': addDot(rayX, rayY, distance, Color.BLUE); break;
@@ -372,9 +327,7 @@ public class GameView {
         }
 
         private boolChar getTile(double x, double y) {
-            // Default to Wall if out of bounds
             boolChar answer = new boolChar('#', true);
-
             int mx = (int)x;
             int my = (int)y;
 
@@ -385,35 +338,28 @@ public class GameView {
             char cha = model.getCurrentMap()[my].charAt(mx);
 
             switch (cha) {
-                // Items, Empty Space, and Start Marker ('A') = Not a Wall (b=false)
+                // Empty Space, Items, and 'A' (Player Start) are invisible
                 case '1': case '2': case '3': case '4': case '5':
                 case '6': case '7': case '8': case '9':
-                case '.':
-                case 'A': // 'A' is the Start/Avatar marker in new JSON, treat as empty space
+                case '.': 
+                case 'A': 
                     answer.setB(false);
                     answer.setC(cha);
                     break;
                 
-                // Explicit Walls
                 case '#': 
                      answer.setB(true);
                      answer.setC('#');
                      break;
 
-                // Portals - Open (Lower case)
+                // Portals (Visual Walls)
                 case 'n': case 's': case 'e': case 'w': 
-                    answer.setB(true); // Stop ray (visible)
-                    answer.setC(cha);
-                    break;
-                    
-                // Portals - Closed (Upper case)
                 case 'N': case 'S': case 'E': case 'W':
-                    answer.setB(true); // Stop ray (visible)
+                    answer.setB(true); 
                     answer.setC(cha);
                     break;
                     
                 default:
-                    // Fallback for anything else (like spaces) is a wall
                     answer.setB(true);
                     answer.setC('#');
                     break;
@@ -422,12 +368,8 @@ public class GameView {
         }
 
         private class boolChar{
-            char c;
-            boolean b;
-            boolChar(char ic, boolean ib){
-                c=ic;
-                b=ib;
-            }
+            char c; boolean b;
+            boolChar(char ic, boolean ib){ c=ic; b=ib; }
             public void setB(boolean b) { this.b = b; }
             public void setC(char c) { this.c = c; }
             public char getC() { return c; }            
