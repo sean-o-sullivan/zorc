@@ -1,3 +1,4 @@
+package sourceFilesPlusAssets;
 import javax.swing.*;
 
 public class Typewriter {

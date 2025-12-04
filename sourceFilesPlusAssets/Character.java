@@ -1,3 +1,5 @@
+package sourceFilesPlusAssets;
+
 import java.util.List;
 
 public class Character extends Inventor implements Jsonable {

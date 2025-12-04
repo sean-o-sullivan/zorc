@@ -1,3 +1,5 @@
+package sourceFilesPlusAssets;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -16,7 +18,7 @@ public class GameModel {
 
     public String currentSeed = "SEED: N/A";
 
-    
+
 
     public Character player; 
     public String[] currentRoomMap; // This is just a pointer to the Room's map

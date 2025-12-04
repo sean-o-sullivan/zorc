@@ -1,3 +1,4 @@
+package sourceFilesPlusAssets;
 
 
 public class Item implements Jsonable{

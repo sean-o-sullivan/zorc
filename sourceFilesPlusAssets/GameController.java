@@ -1,3 +1,5 @@
+package sourceFilesPlusAssets;
+
 import javax.swing.*;
 import java.awt.event.*;
 import java.nio.file.*;

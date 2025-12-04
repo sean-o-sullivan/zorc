@@ -1,3 +1,5 @@
+package sourceFilesPlusAssets;
+
 public abstract class Inventor {
 
     protected Storage<Item> inventory = new Storage<>();

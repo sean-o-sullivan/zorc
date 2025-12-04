@@ -1,3 +1,5 @@
+package sourceFilesPlusAssets;
+
 import java.util.HashMap;
 import java.util.Map;
 

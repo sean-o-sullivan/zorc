@@ -1,4 +1,5 @@
-// Save as GameTimer.java
+package sourceFilesPlusAssets;
+
 public class GameTimer extends Thread {
     private boolean running = true;
     public double seconds = 0;
